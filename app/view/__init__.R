@@ -3,5 +3,5 @@
 #' @export
 box::use(
   app/view/sidebar,
-  app/view/stockInfo
+  app/view/stockInfo,
 )

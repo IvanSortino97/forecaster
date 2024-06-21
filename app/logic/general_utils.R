@@ -1,6 +1,7 @@
-box::use(shiny[img, tags, HTML],
+box::use(shiny[img, tags, HTML, shinyOptions, getShinyOption, onSessionEnded],
          shiny.router[route_link],
-         bsicons[bs_icon])
+         bsicons[bs_icon],
+         yaml[read_yaml, write_yaml])
 
 #' @export
 logo <- img(
@@ -9,6 +10,25 @@ logo <- img(
   width = "40px",
   style = "margin-left: 10px"
 )
+
+#' @export
+#' On start functions
+onStart <- function(){
+  message('Reading "setting.yaml"')
+  yaml <- read_yaml("app/settings.yaml")
+  shinyOptions(SETTINGS = yaml)
+}
+
+#' @export
+#' On close functions
+onEnd <- function(){
+  onSessionEnded(function(){
+  SETT <- getShinyOption("SETTINGS")
+  write_yaml(SETT , "app/settings.yaml")
+  message('"settings.yaml" updated')
+})
+}
+
 
 #' @export
 header <- function(title) {
