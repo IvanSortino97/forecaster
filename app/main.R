@@ -14,6 +14,7 @@ ui <- function(id) {
   ns <- NS(id)
 
   page_sidebar(
+    fillable_mobile = TRUE,
     sidebar$head,
 
     title = header("Forcaster"),
