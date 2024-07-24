@@ -1,13 +1,16 @@
 box::use(
   TTR[stockSymbols],
+  quantmod[getSymbols],
+  data.table[data.table],
   #spsComps[addLoader],
   shiny[getShinyOption, shinyOptions],
   lubridate[ years, `%m-%`],
-  rvest[html_nodes, html_text, read_html, html_table, ]
+  rvest[html_nodes, html_text, read_html, html_table, ],
+  reactable[reactable, reactableTheme,colDef]
 )
 
 #' @export
-get_symbols <- function(last_update){
+get_symbols <- function(){
 
   SETT <- getShinyOption("SETTINGS")
 
@@ -30,6 +33,36 @@ get_symbols <- function(last_update){
 }
 
 #' @export
+get_data <- function(ticker, from){
+
+  SETT <- getShinyOption("SETTINGS")
+
+  last <- as.Date(SETT$symbols$last_update_data$date)
+  time_passed <-  Sys.Date() - last
+  last_ticker <- SETT$symbols$last_update_data$ticker
+
+  if (time_passed > 1 || ticker != last_ticker) {
+    data <- getSymbols(
+      Symbols = ticker,
+      src = "yahoo",
+      auto.assign = FALSE,
+      from = from
+    )
+    saveRDS(data, file = "app/files/cached_data.rds")
+
+    SETT$symbols$last_update_data$date <- as.character(Sys.Date())
+    SETT$symbols$last_update_data$ticker <- as.character(ticker)
+    shinyOptions(SETTINGS = SETT)
+
+  } else {
+    message(sprintf("Reading cached '%s' data",ticker))
+    data <- readRDS(file = "app/files/cached_data.rds")
+  }
+
+  return(data)
+}
+
+#' @export
 get_sp500 <- function(){
 
 
@@ -46,21 +79,7 @@ get_sp500 <- function(){
       html_nodes(xpath = '//*[@id="constituents"]') |>
       html_table(fill = TRUE)
 
-    # colnames(sp500_table) <- c(
-    #   "Symbol",
-    #   "Name",
-    #   "SEC filings",
-    #   "Sector",
-    #   "Sub_Industry",
-    #   "Headquarters",
-    #   "Date_Added",
-    #   "CIK"
-    # )
-
-    # Drop the "SEC filings" column
-    sp500_table <- sp500_table[,-3]
-
-    symbols <- sp500_table[,1]
+    symbols <- sp500_table[[1]][,1]
     saveRDS(symbols, file = "app/files/symbolsSP500.rds")
 
     SETT$symbols$last_update_sp500 <- as.character(Sys.Date())
@@ -103,9 +122,10 @@ scrape_yahoo_finance <- function(ticker) {
     description = '//p[@class="yf-1xu2f9r" and not(@title)]',
     stockPrice = '//*[@data-field="regularMarketOpen"]',
     fiftyTwoWeekRange = '//*[@data-field="fiftyTwoWeekRange"]',
+    volume = '//*[@data-field="regularMarketVolume"]',
     averageVolume  = '//*[@data-field="averageVolume"]',
     peRatioTTM = '//li[span[contains(text(), "PE Ratio (TTM)")]]//fin-streamer[@data-field="trailingPE"]/@data-value',
-    epsTTM = '//li[span[contains(text(), "EPS (TTM)")]]//fin-streamer[@data-field="trailingEps"]/@data-value',
+    epsTTM = '//li[span[contains(text(), "EPS (TTM)")]]//fin-streamer[@data-field="trailingPE"]/@data-value',
     earningsDate = '//li[.//span[contains(text(),"Earnings Date")]]//span[contains(@class, "value")]',
     marketCap = '//li[p[contains(text(), "Market Cap")]]/p[@class="value yf-1n4vnw8"]',
     enterpriseValue = '//li[p[contains(text(), "Enterprise Value ")]]/p[@class="value yf-1n4vnw8"]',
@@ -141,6 +161,65 @@ scrape_yahoo_finance <- function(ticker) {
   }
 
   return(lapply(scrapelist, extract_data))
+}
+
+#' @export
+stat_table <- function(dt, type){
+  dt <- switch (type,
+    "valuation" = data.table(name = c(
+      "Trailing P/E:",
+      "Forward P/E:",
+      "PEG Ratio:",
+      "Price/Sales:",
+      "Price/Book:",
+      "Enterprise Value/Revenue:",
+      "Enterprise Value/EBITDA:"
+    ),
+    value = c(
+      dt$trailingPE,
+      dt$forwardPE,
+      dt$pegRatio,
+      dt$priceSale,
+      dt$priceBook,
+      dt$enterpriseValueRevenue,
+      dt$enterpriseValueEBITDA)
+    ),
+    "profitability" = data.table(name = c(
+      "Profit Margin:",
+      "Return on Assets:",
+      "Return on Equity:",
+      "Revenue:",
+      "Net Income:",
+      "Diluted EPS:"
+    ),
+    value = c(
+      dt$profitMargin,
+      dt$returnOnAssets,
+      dt$returnOnEquity,
+      dt$revenue,
+      dt$netIncome,
+      dt$dilutedEPS)
+    ),
+    "balancesheet" = data.table(name = c("Total Cash:",
+                                         "Total Debt/Equity:",
+                                         "Levered Free Cash Flow:"),
+                                value = c(
+                                  dt$totalCash,
+                                  dt$totalDebtEquity,
+                                  dt$leveredFreeCashFlow
+                                ))
+  )
+
+
+dt |> reactable(
+    columns = list(
+      value = colDef(style = list(textAlign = "right", fontWeight = "bold"))),
+    compact = TRUE,
+    theme = reactableTheme(
+      headerStyle = list(display = "none"),
+      cellPadding = "4px 8px"
+    )
+  )
 }
 
 
