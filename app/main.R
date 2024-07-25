@@ -23,7 +23,7 @@ ui <- function(id) {
 
     page_fillable(router_ui(
       route("/", div("root_page")),
-      route("page1", stockInfo$ui(ns("stockInfo"))),
+      route("stockInfo", stockInfo$ui(ns("stockInfo"))),
       route("page2", div("page2"))
     ))
   )
@@ -36,7 +36,7 @@ server <- function(id) {
     onStart()
     onEnd()
 
-    router_server("page1")
+    router_server("stockInfo")
 
     stockInfo$server("stockInfo")
 

@@ -19,10 +19,10 @@ sidebar_component <- sidebar(
   accordion(
     accordion_panel(
       "Stock info",
-      icon = bs_icon("menu-app"),
-      accordion_section(title = "Page 1",
-                        page = "page1",
-                        icon = "apple"),
+      icon = bs_icon("graph-up"),
+      accordion_section(title = "Stock selection",
+                        page = "stockInfo",
+                        icon = "list-task"),
       accordion_section(title = "Page 2",
                         page = "page2",
                         icon = "apple")
