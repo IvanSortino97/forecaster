@@ -1,12 +1,17 @@
 box::use(
+  bslib[card_body, card],
+  echarts4r[e_y_axis, e_x_axis,e_show_loading,e_toolbox,e_grid,e_datazoom,e_area, e_candle, echarts4rOutput, e_legend, e_title, e_tooltip, e_line, e_charts],
   TTR[stockSymbols],
+  dplyr[filter, select],
   quantmod[getSymbols],
   data.table[data.table],
   #spsComps[addLoader],
-  shiny[getShinyOption, shinyOptions],
+  shiny[getShinyOption, shinyOptions, tags,div, HTML, textOutput],
+  shinyWidgets[switchInput,],
   lubridate[ years, `%m-%`],
   rvest[html_nodes, html_text, read_html, html_table, ],
-  reactable[reactable, reactableTheme,colDef]
+  reactable[reactable, reactableTheme,colDef],
+  utils[tail],
 )
 
 #' @export
@@ -74,6 +79,7 @@ get_sp500 <- function(){
   if (time_passed > 1) {
     url <- "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 
+    message("Fetching SP500 list")
     webpage <- read_html(url)
     sp500_table <- webpage |>
       html_nodes(xpath = '//*[@id="constituents"]') |>
@@ -108,6 +114,13 @@ years_ago <- function(years) {
   date <- Sys.Date()
   date_x_years_ago <- date %m-% years(years)
   return(date_x_years_ago)
+}
+
+#' @export
+months_ago <- function(months) {
+  date <- Sys.Date()
+  date_x_months_ago <- date %m-% months(months)
+  return(date_x_months_ago)
 }
 
 #' @export
@@ -164,56 +177,63 @@ scrape_yahoo_finance <- function(ticker) {
 }
 
 #' @export
-stat_table <- function(dt, type){
-  dt <- switch (type,
-    "valuation" = data.table(name = c(
-      "Trailing P/E:",
-      "Forward P/E:",
-      "PEG Ratio:",
-      "Price/Sales:",
-      "Price/Book:",
-      "Enterprise Value/Revenue:",
-      "Enterprise Value/EBITDA:"
+make_stat_table <- function(dt, type){
+
+  dt <- switch (
+    type,
+    "valuation" = data.table(
+      name = c(
+        "Trailing P/E:",
+        "Forward P/E:",
+        "PEG Ratio:",
+        "Price/Sales:",
+        "Price/Book:",
+        "Enterprise Value/Revenue:",
+        "Enterprise Value/EBITDA:"
+      ),
+      value = c(
+        dt$trailingPE,
+        dt$forwardPE,
+        dt$pegRatio,
+        dt$priceSale,
+        dt$priceBook,
+        dt$enterpriseValueRevenue,
+        dt$enterpriseValueEBITDA
+      )
     ),
-    value = c(
-      dt$trailingPE,
-      dt$forwardPE,
-      dt$pegRatio,
-      dt$priceSale,
-      dt$priceBook,
-      dt$enterpriseValueRevenue,
-      dt$enterpriseValueEBITDA)
+    "profitability" = data.table(
+      name = c(
+        "Profit Margin:",
+        "Return on Assets:",
+        "Return on Equity:",
+        "Revenue:",
+        "Net Income:",
+        "Diluted EPS:"
+      ),
+      value = c(
+        dt$profitMargin,
+        dt$returnOnAssets,
+        dt$returnOnEquity,
+        dt$revenue,
+        dt$netIncome,
+        dt$dilutedEPS
+      )
     ),
-    "profitability" = data.table(name = c(
-      "Profit Margin:",
-      "Return on Assets:",
-      "Return on Equity:",
-      "Revenue:",
-      "Net Income:",
-      "Diluted EPS:"
-    ),
-    value = c(
-      dt$profitMargin,
-      dt$returnOnAssets,
-      dt$returnOnEquity,
-      dt$revenue,
-      dt$netIncome,
-      dt$dilutedEPS)
-    ),
-    "balancesheet" = data.table(name = c("Total Cash:",
-                                         "Total Debt/Equity:",
-                                         "Levered Free Cash Flow:"),
-                                value = c(
-                                  dt$totalCash,
-                                  dt$totalDebtEquity,
-                                  dt$leveredFreeCashFlow
-                                ))
+    "balancesheet" = data.table(
+      name = c("Total Cash:",
+               "Total Debt/Equity:",
+               "Levered Free Cash Flow:"),
+      value = c(dt$totalCash,
+                dt$totalDebtEquity,
+                dt$leveredFreeCashFlow)
+    )
   )
 
 
-dt |> reactable(
-    columns = list(
-      value = colDef(style = list(textAlign = "right", fontWeight = "bold"))),
+  dt |> reactable(
+    columns = list(value = colDef(
+      style = list(textAlign = "right", fontWeight = "bold")
+    )),
     compact = TRUE,
     theme = reactableTheme(
       headerStyle = list(display = "none"),
@@ -223,6 +243,214 @@ dt |> reactable(
 }
 
 
+#' @export
+make_stock_table <- function(dt){
+
+  dt |> reactable(
+    compact = TRUE,
+    showPageInfo = FALSE,
+    paginationType = "simple",
+    searchable = TRUE,
+    highlight = TRUE,
+    wrap = FALSE,
+    selection = "single",
+    onClick = "select",
+    columns = list(
+      Symbol = colDef(sticky = "left",
+                      width = 80),
+      Name = colDef(width = 350),
+      Financial.Status = colDef(width = 150),
+      ETF = colDef(width = 80)
+    ),
+    theme = reactableTheme(searchInputStyle = list(width = "100%"))
+  )
+}
+
+#' @export
+ui_switch_inputs <- function(id1, id2){
+  div(style = "display: flex; align-items: center; justify-content: flex-start; gap: 15px;",
+      switchInput(
+        inputId = id1,
+        label = "Show list",
+        labelWidth = "100%",
+        size = "mini",
+        inline = T,
+        value = TRUE,
+        onLabel = "✓",
+        offLabel = "✕"
+      ),
+      switchInput(
+        inputId = id2,
+        label = "SP500",
+        labelWidth = "100%",
+        size = "mini",
+        inline = T,
+        value = TRUE,
+        onStatus = "success",
+        onLabel = "✓",
+        offLabel = "✕"
+      )
+  )
+}
+
+#' @export
+#' custom radiobutton
+customRadioGroupButtons <- function(inputId, choices, selected = NULL, status = "default",
+                                    size = "normal", justified = FALSE, individual = FALSE,
+                                    checkIcon = NULL, direction = "horizontal", width = NULL,
+                                    class = NULL) {
+  # Ensure selected is not NULL, default to the first choice if it is NULL
+  if (is.null(selected) && length(choices) > 0) {
+    selected <- choices[1]
+  }
+
+  # Generate button HTML
+  btns <- lapply(seq_along(choices), function(i) {
+    choiceName <- names(choices)[i]
+    if (is.null(choiceName)) choiceName <- choices[i]
+    choiceValue <- choices[i]
+    btnClass <- paste0("btn btn-", status, " btn-", size)
+    if (choiceValue == selected) btnClass <- paste(btnClass, "active")
+    tags$button(
+      type = "button",
+      class = btnClass,
+      `data-value` = choiceValue,
+      choiceName
+    )
+  })
+
+  # Create container div with optional custom class
+  containerClass <- "btn-group-container-sw"
+  if (!is.null(class)) {
+    containerClass <- paste(containerClass, class)
+  }
+
+  # Create button group div
+  btnGroup <- div(
+    class = if (individual) "btn-group-toggle" else "btn-group",
+    `data-toggle` = if (individual) "buttons" else NULL,
+    role = "group",
+    btns
+  )
+
+  # Add justification if specified
+  if (justified) {
+    btnGroup <- div(class = "btn-group btn-group-justified", role = "group", btns)
+  }
+
+  # Add direction if specified
+  if (direction == "vertical") {
+    btnGroup <- div(class = "btn-group-vertical", role = "group", btns)
+  }
+
+  # Return full UI component
+  div(
+    id = inputId,
+    class = containerClass,
+    style = if (!is.null(width)) paste("width:", width, ";") else NULL,
+    btnGroup,
+    tags$script(HTML(paste0(
+      "$(function() {
+        $('#", inputId, " .btn').click(function() {
+          $('#", inputId, " .btn').removeClass('active');
+          $(this).addClass('active');
+          var val = $(this).data('value');
+          Shiny.setInputValue('", inputId, "', val);
+        });
+      });"
+    )))
+
+  )
+}
+
+#' @export
+ui_title_plot_card <- function(titleId,radiobuttonsId, plotId){
+  card(
+    div(style = "padding-left: 5px;",
+        tags$h5(textOutput(titleId), style = "font-weight: bold; color: #464646; font-size: 20px;"),
+        tags$p("Source: Yahoo finance", style = "font-size: 12px; color: #7f8189;")),
+    card_body(
+      customRadioGroupButtons(
+        inputId = radiobuttonsId,
+        choices = c("3M" = 3,
+                    "6M" = 6,
+                    "1Y" = 12,
+                    "5Y" = (12*5),
+                    "ALL" = (12*10)),
+        selected = 6,
+        size = "xs",
+        direction = "horizontal",
+        individual = TRUE,
+        class = "custom-radio-group"
+      ),
+      echarts4rOutput(plotId)
+    )
+  )
+}
+
+#' @export
+make_stock_plot <- function(data, slicer, defaultMonth = 6, name){
+  d <- data
+
+  if (!is.null(slicer)) {
+    d  <- filter(data, date >= months_ago(slicer))
+  } else {
+    d  <- filter(data, date >= months_ago(defaultMonth))
+  }
+
+  y_min <- min(d$Low)
+  y_max <- max(d$High)
+  y_range <- y_max - y_min
+  y_min_adjusted <- y_min - y_range * 0.1
+  y_max_adjusted <- y_max + y_range * 0.1
+
+  d |>
+    e_charts(date) |>
+    e_candle(
+      opening = Open, closing = Close,
+      low = Low, high = High,
+      name = name
+    ) |>
+    e_datazoom(type = "slider") |>
+    e_grid(top = 0, right = 5, left = 35) |>
+    e_tooltip(trigger = "axis") |>
+    e_legend(FALSE) |>
+    e_toolbox(show = FALSE) |>
+    e_show_loading() |>
+    e_y_axis(min = y_min_adjusted,
+             max = y_max_adjusted,
+             axisLabel = list(showMinLabel = FALSE, showMaxLabel = FALSE))
+}
+
+#' @export
+make_volume_plot <- function(data, days){
+
+  data |>
+    tail(days) |>
+    e_charts(date) |>
+    e_line(
+      Volume,
+      smooth = TRUE,
+      lineStyle = list(color = "#5756ff", width = 0.3),
+      legend = FALSE
+    ) |>
+    e_area(
+      Volume,
+      smooth = TRUE,
+      itemStyle = list(opacity = 0.1),
+      color = "#5756ff"
+    ) |>
+    e_tooltip(trigger = "axis") |>
+    e_x_axis(show = FALSE) |>
+    e_y_axis(show = FALSE) |>
+    e_grid(
+      top = 0,
+      right = 0,
+      bottom = 0,
+      left = 0
+    ) |>
+    e_legend(FALSE)
+}
 #' @export
 # spinner <- addLoader$new(
 #   target_selector =  x,

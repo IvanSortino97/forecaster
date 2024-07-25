@@ -1,15 +1,17 @@
 box::use(shiny[div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons, ...],
-         bslib[page_fillable, card, card_header, card_body, value_box, layout_column_wrap ],
+         bslib[page_fillable, card, card_header,card_title, card_body, value_box, layout_column_wrap ],
          bsicons[bs_icon],
-         shinyWidgets[switchInput, updateSwitchInput, radioGroupButtons],
-         echarts4r[..., echarts4rOutput, renderEcharts4r, e_legend, e_title, e_tooltip, e_line, e_charts],
-         dplyr[filter],
+         shinyWidgets[updateSwitchInput],
+         dplyr[filter,],
+         echarts4r[echarts4rOutput, renderEcharts4r],
          zoo[coredata, index],
          data.table[data.table],
-         utils[tail],
-         reactable[reactableOutput, renderReactable, reactable, colDef, reactableTheme, getReactableState],
+         reactable[reactableOutput, renderReactable, getReactableState],
 )
-box::use(app / logic / stockInfo_utils[get_symbols, get_sp500, get_data, make_list, years_ago, scrape_yahoo_finance, stat_table])
+box::use(app / logic / stockInfo_utils[get_symbols, get_sp500, get_data,
+                                       make_list, make_stock_table, make_stock_plot, make_volume_plot,
+                                       years_ago, months_ago, scrape_yahoo_finance, make_stat_table,
+                                       ui_switch_inputs, ui_title_plot_card])
 
 #' @export
 ui <- function(id) {
@@ -25,29 +27,8 @@ ui <- function(id) {
         onInitialize = I('function() { this.setValue(""); }')),
       width = "100%"
     ),
-    div(style = "display: flex; align-items: center; justify-content: flex-start; gap: 15px;",
-        switchInput(
-          inputId = ns("tableSwitch"),
-          label = "Show list",
-          labelWidth = "100%",
-          size = "mini",
-          inline = T,
-          value = TRUE,
-          onLabel = "✓",
-          offLabel = "✕"
-        ),
-        switchInput(
-          inputId = ns("sp500Switch"),
-          label = "SP500",
-          labelWidth = "100%",
-          size = "mini",
-          inline = T,
-          value = TRUE,
-          onStatus = "success",
-          onLabel = "✓",
-          offLabel = "✕"
-        )
-    ),
+    ui_switch_inputs(ns("tableSwitch"),
+                     ns("sp500Switch")),
     conditionalPanel(
       condition = "input.tableSwitch === true",
       ns = ns,
@@ -58,43 +39,33 @@ ui <- function(id) {
         )
       )
     ),
-    card(
-      card_body(echarts4rOutput(ns("stockPlot")),
-                radioGroupButtons(
-                  inputId = ns("yearSlicer"),
-                  choices = c("3M","6M","1Y","5Y","ALL"),
-                  selected = "6M",
-                  #inline = TRUE,
-                  #width = "100px",
-                  #size = "xs"
-                )
-                )
-    ),
+    ui_title_plot_card(titleId = ns("stockTitle"),
+                        radiobuttonsId = ns("yearSlicer"),
+                        plotId = ns("stockPlot")),
     layout_column_wrap(
       #height = "600px",
       width = "200px",
       value_box(
         title = "Stock Price",
         value = textOutput(ns("stockPrice")),
-        showcase = bs_icon("bar-chart")
+        showcase = bs_icon("graph-up")
       ),
       value_box(
         title = "52 Week Range",
         value = textOutput(ns("fiftyTwoWeekRange")),
-        showcase = bs_icon("bar-chart")
+        showcase = bs_icon("calendar3-range")
       ),
       value_box(
         title = "Volume",
         value = textOutput(ns("volume")),
         showcase = echarts4rOutput(ns("volumePlot")),
         full_screen = TRUE,
-        theme = "success",
-        p("Open to see more")
+        p("Open to see more", style = "font-size: 10px; color: #7f8189;")
       ),
       value_box(
         title = "Average Volume",
         value = textOutput(ns("averageVolume")),
-        showcase = bs_icon("graph-up-arrow")
+        showcase = bs_icon("bar-chart-line-fill")
       ),
       value_box(
         title = "P/E Ratio (TTM)",
@@ -169,24 +140,7 @@ server <- function(id, ...) {
     })
 
     output$stockTable <- renderReactable({
-      symbols_dt() |> reactable(
-        compact = TRUE,
-        showPageInfo = FALSE,
-        paginationType = "simple",
-        searchable = TRUE,
-        highlight = TRUE,
-        wrap = FALSE,
-        selection = "single",
-        onClick = "select",
-        columns = list(
-          Symbol = colDef(sticky = "left",
-                          width = 80),
-          Name = colDef(width = 350),
-          Financial.Status = colDef(width = 150),
-          ETF = colDef(width = 80)
-        ),
-        theme = reactableTheme(searchInputStyle = list(width = "100%"))
-      )
+      make_stock_table(symbols_dt())
     })
 
     # Update selected stock from table list
@@ -208,6 +162,7 @@ server <- function(id, ...) {
       scraped_info(scrape_yahoo_finance(selectedTicker()))
 
       stock_data <- data.table(date = as.character(index(stock_data)),
+                               #Date = index(stock_data),
                                coredata(stock_data))
 
       names(stock_data) <-
@@ -217,32 +172,22 @@ server <- function(id, ...) {
       selectedStockInfo(symbols_dt() |> filter(Symbol == selectedTicker()))
     })
 
-    output$stockPlot <- renderEcharts4r({
-      req(data())
+    output$stockTitle <- renderText(selectedStockInfo()$Name)
 
-      data() |>
-        e_charts(date) |>
-        e_candle(opening = Open, closing = Close, low = Low, high = High, name = selectedStockInfo()$Symbol) |>
-        e_datazoom(type = "slider") |>
-        e_title(selectedStockInfo()$Name, "Quantmod data") |>
-        e_grid(right = 0, left = 0) |>
-        e_tooltip(trigger = "axis") |>
-        e_legend(FALSE)
+    output$stockPlot <- renderEcharts4r({
+
+      req(data())
+      make_stock_plot(data(),
+                      input$yearSlicer,
+                      defaultMonth = 6,
+                      name = selectedStockInfo()$Symbol)
     })
 
-    output$volumePlot <- renderEcharts4r({
-      req(data())
 
-      data() |>
-        tail(365) |>
-        e_charts(date) |>
-        e_line(Volume, smooth = TRUE, lineStyle = list(color = "white", width = 0.3), legend = FALSE) |>
-        e_area(Volume, smooth = TRUE, itemStyle = list(opacity = 0.2), color = "white") |>
-        e_tooltip(trigger = "axis") |>
-        e_x_axis(show = FALSE) |>
-        e_y_axis(show = FALSE) |>
-        e_grid(top = 0, right = 0, bottom = 0, left = 0) |>
-        e_legend(FALSE)
+    output$volumePlot <- renderEcharts4r({
+
+      req(data())
+      make_volume_plot(data(), days = 61)
     })
 
     output$stockPrice <- renderText({
@@ -280,15 +225,15 @@ server <- function(id, ...) {
 
     output$valuationMeasures <- renderReactable({
       req(scraped_info())
-      stat_table(scraped_info(), "valuation")
+      make_stat_table(scraped_info(), "valuation")
     })
     output$profitabilityTable <- renderReactable({
       req(scraped_info())
-      stat_table(scraped_info(), "profitability")
+      make_stat_table(scraped_info(), "profitability")
     })
     output$balancesheetTable <- renderReactable({
       req(scraped_info())
-      stat_table(scraped_info(), "balancesheet")
+      make_stat_table(scraped_info(), "balancesheet")
     })
 
 
