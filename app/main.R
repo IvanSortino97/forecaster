@@ -13,8 +13,8 @@ box::use(app / view[...],
 ui <- function(id) {
   ns <- NS(id)
 
-  page_sidebar(
-    fillable_mobile = TRUE,
+  page_sidebar(fillable_mobile = TRUE,
+
     sidebar$head,
 
     title = header("Forcaster"),
@@ -22,9 +22,9 @@ ui <- function(id) {
     sidebar = sidebar$sidebar_component,
 
     page_fillable(router_ui(
-      route("/", div("root_page")),
+      route("/", homepage$ui(ns("homepage"))),
       route("stockInfo", stockInfo$ui(ns("stockInfo"))),
-      route("page2", div("page2"))
+      route("stockAnalysis", stockAnalysis$ui(ns("stockAnalysis"))  )
     ))
   )
 
@@ -36,9 +36,11 @@ server <- function(id) {
     onStart()
     onEnd()
 
-    router_server("stockInfo")
+    router_server("stockAnalysis")
 
+    homepage$server("homepage")
     stockInfo$server("stockInfo")
+    stockAnalysis$server("stockAnalysis")
 
   })
 }

@@ -23,9 +23,9 @@ sidebar_component <- sidebar(
       accordion_section(title = "Stock selection",
                         page = "stockInfo",
                         icon = "list-task"),
-      accordion_section(title = "Page 2",
-                        page = "page2",
-                        icon = "apple")
+      accordion_section(title = "Stock Analysis",
+                        page = "stockAnalysis",
+                        icon = "clipboard2-data")
     ),
 
     # Test buttons

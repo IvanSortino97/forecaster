@@ -1,4 +1,4 @@
-box::use(shiny[div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons, ...],
+box::use(shiny[div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons, renderUI, reactive, observe, req, conditionalPanel, textOutput, p, updateSelectizeInput, observeEvent, renderText, tags],
          bslib[page_fillable, card, card_header,card_title, card_body, value_box, layout_column_wrap ],
          bsicons[bs_icon],
          shinyWidgets[updateSwitchInput],
@@ -9,11 +9,11 @@ box::use(shiny[div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons, 
          spsComps[addLoader],
          reactable[reactableOutput, renderReactable, getReactableState],
 )
-box::use(app / logic / general_utils[title, subtitle_box])
+box::use(app / logic / general_utils[title, subtitle])
 box::use(app / logic / stockInfo_utils[get_symbols, get_sp500, get_data,
                                        make_list, make_stock_table, make_stock_plot, make_volume_plot,
                                        years_ago, months_ago, scrape_yahoo_finance, make_stat_table,
-                                       ui_switch_inputs, ui_title_plot_card])
+                                       ui_switch_inputs, ui_title_plot_card, ui_source_link])
 
 #' @export
 ui <- function(id) {
@@ -22,7 +22,7 @@ ui <- function(id) {
   page_fillable(
 
     title("Stock selection"),
-    subtitle_box("Tis section allow the user to..."),
+    subtitle("Selection and analysis dashboard for NASDAQ Stocks with interactive data visualization and financial metrics"),
 
     selectizeInput(
       ns("selectStock"),
@@ -48,7 +48,8 @@ ui <- function(id) {
     ),
     ui_title_plot_card(titleId = ns("stockTitle"),
                         radiobuttonsId = ns("yearSlicer"),
-                        plotId = ns("stockPlot")),
+                        plotId = ns("stockPlot"),
+                       tickerId = ns("stockUrl")),
     layout_column_wrap(
       width = "200px",
       value_box(
@@ -93,6 +94,10 @@ ui <- function(id) {
         value = textOutput(ns("enterpriseValue")),
         showcase = bs_icon("building")
       )
+    ),
+    card(
+      max_height = 200,
+      textOutput(ns("description"))
     ),
     card(
       card_header("Valuation Measures"),
@@ -187,6 +192,7 @@ server <- function(id, ...) {
     })
 
     output$stockTitle <- renderText(selectedStockInfo()$Name)
+    output$stockUrl <- renderUI(ui_source_link(selectedTicker()))
 
     output$stockPlot <- renderEcharts4r({
 
@@ -237,6 +243,11 @@ server <- function(id, ...) {
       scraped_info()$enterpriseValue
     })
 
+    output$description <- renderText({
+      req(scraped_info())
+      scraped_info()$description
+    })
+
     output$valuationMeasures <- renderReactable({
       req(scraped_info())
       make_stat_table(scraped_info(), "valuation")
@@ -250,6 +261,14 @@ server <- function(id, ...) {
       make_stat_table(scraped_info(), "balancesheet")
     })
 
+    return(
+      list(
+        ticker = reactive(selectedTicker()),
+        selectedStockInfo = reactive(selectedStockInfo()$Name),
+        data = reactive(data()),
+        data_xts = reactive(data_xts())
+      )
+    )
 
   })
 }

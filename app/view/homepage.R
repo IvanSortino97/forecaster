@@ -2,20 +2,16 @@
 
 box::use(
   shiny[div, moduleServer, NS],
-  bslib[page_fillable]
 )
 box::use(
-  app / logic / general_utils[title, subtitle, ...],
+  app / logic / general_utils[...],
 )
 
 #' @export
 ui <- function(id) {
   ns <- NS(id)
 
-  page_fillable(
-    div("New module")
-  )
-
+div("Homepage")
 
 }
 

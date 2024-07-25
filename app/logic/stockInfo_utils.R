@@ -1,12 +1,12 @@
 box::use(
   bslib[card_body, card],
-  echarts4r[e_y_axis, e_x_axis,e_show_loading,e_toolbox,e_grid,e_datazoom,e_area, e_candle, echarts4rOutput, e_legend, e_title, e_tooltip, e_line, e_charts],
+  echarts4r[e_dims, e_y_axis, e_x_axis,e_show_loading,e_toolbox,e_grid,e_datazoom,e_area, e_candle, echarts4rOutput, e_legend, e_title, e_tooltip, e_line, e_charts],
   TTR[stockSymbols],
   dplyr[filter, select],
   quantmod[getSymbols],
   data.table[data.table],
   #spsComps[addLoader],
-  shiny[getShinyOption, shinyOptions, tags,div, HTML, textOutput],
+  shiny[getShinyOption, shinyOptions, tags,div, HTML, textOutput, uiOutput],
   shinyWidgets[switchInput,],
   lubridate[ years, `%m-%`],
   rvest[html_nodes, html_text, read_html, html_table, ],
@@ -370,12 +370,15 @@ customRadioGroupButtons <- function(inputId, choices, selected = NULL, status = 
 }
 
 #' @export
-ui_title_plot_card <- function(titleId,radiobuttonsId, plotId){
+ui_title_plot_card <- function(titleId,radiobuttonsId, plotId, tickerId){
+
   card(
     div(style = "padding-left: 5px;",
         tags$h5(textOutput(titleId), style = "font-weight: bold; color: #464646; font-size: 20px;"),
-        tags$p("Source: Yahoo finance", style = "font-size: 12px; color: #7f8189;")),
-    card_body(
+        uiOutput(tickerId)
+        ),
+
+
       customRadioGroupButtons(
         inputId = radiobuttonsId,
         choices = c("3M" = 3,
@@ -389,12 +392,17 @@ ui_title_plot_card <- function(titleId,radiobuttonsId, plotId){
         individual = TRUE,
         class = "custom-radio-group"
       ),
-      echarts4rOutput(plotId)
+    card_body(
+      class = "padding_bottom0",
+      #max_height = 200,
+      fill = TRUE,
+          echarts4rOutput(plotId)
     )
   )
 }
 
 #' @export
+
 make_stock_plot <- function(data, slicer, defaultMonth = 6, name){
   d <- data
 
@@ -417,8 +425,9 @@ make_stock_plot <- function(data, slicer, defaultMonth = 6, name){
       low = Low, high = High,
       name = name
     ) |>
+    #e_dims(height = "100px") |>
     e_datazoom(type = "slider") |>
-    e_grid(top = 0, right = 5, left = 35) |>
+    e_grid(top = 10, right = 5, left = 35) |>
     e_tooltip(trigger = "axis") |>
     e_legend(FALSE) |>
     e_toolbox(show = FALSE) |>
@@ -457,10 +466,16 @@ make_volume_plot <- function(data, days){
     ) |>
     e_legend(FALSE)
 }
+
 #' @export
-# spinner <- addLoader$new(
-#   target_selector =  x,
-#   type = "dual-ring",
-#   height = "20px",
-#   color = "#757575"
-# )
+ui_source_link <- function(ticker){
+  tags$p(
+    "Source: ",
+    tags$a("Yahoo finance",
+           target = "_blank",
+           href = paste0("https://finance.yahoo.com/quote/", ticker),
+           class = "noHover",
+    ),
+    style = "font-size: 12px; color: #7f8189; display: inline;"
+  )
+}

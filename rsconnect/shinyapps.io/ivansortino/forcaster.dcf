@@ -5,7 +5,7 @@ account: ivansortino
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 12207520
-bundleId: 8907370
+bundleId: 8908326
 url: https://ivansortino.shinyapps.io/forcaster/
 version: 1
 asMultiple: FALSE
