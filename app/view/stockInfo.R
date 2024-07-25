@@ -6,8 +6,10 @@ box::use(shiny[div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons, 
          echarts4r[echarts4rOutput, renderEcharts4r],
          zoo[coredata, index],
          data.table[data.table],
+         spsComps[addLoader],
          reactable[reactableOutput, renderReactable, getReactableState],
 )
+box::use(app / logic / general_utils[title, subtitle_box])
 box::use(app / logic / stockInfo_utils[get_symbols, get_sp500, get_data,
                                        make_list, make_stock_table, make_stock_plot, make_volume_plot,
                                        years_ago, months_ago, scrape_yahoo_finance, make_stat_table,
@@ -18,9 +20,13 @@ ui <- function(id) {
   ns <- NS(id)
 
   page_fillable(
+
+    title("Stock selection"),
+    subtitle_box("Tis section allow the user to..."),
+
     selectizeInput(
       ns("selectStock"),
-      "Select stock",
+      label = NULL,
       choices = NULL,
       options = list(
         placeholder = 'Please select a stock to analyze.',
@@ -28,7 +34,8 @@ ui <- function(id) {
       width = "100%"
     ),
     ui_switch_inputs(ns("tableSwitch"),
-                     ns("sp500Switch")),
+                     ns("sp500Switch"),
+                     ns("loadingDiv")),
     conditionalPanel(
       condition = "input.tableSwitch === true",
       ns = ns,
@@ -43,7 +50,6 @@ ui <- function(id) {
                         radiobuttonsId = ns("yearSlicer"),
                         plotId = ns("stockPlot")),
     layout_column_wrap(
-      #height = "600px",
       width = "200px",
       value_box(
         title = "Stock Price",
@@ -110,6 +116,13 @@ server <- function(id, ...) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    spinner <- addLoader$new(
+      target_selector =  "loadingDiv",
+      type = "dual-ring",
+      height = "20px",
+      color = "#757575"
+    )
+
     sp500 <- get_sp500()$Symbol
     symbols_dt <- reactive({
       if (input$sp500Switch)
@@ -154,6 +167,7 @@ server <- function(id, ...) {
     # Pull data when stock is selected
     observeEvent(selectedTicker(), {
       req(selectedTicker())
+      spinner$show()
 
       stock_data <- get_data(ticker = selectedTicker(),
                              from = years_ago(10))
@@ -165,11 +179,11 @@ server <- function(id, ...) {
                                #Date = index(stock_data),
                                coredata(stock_data))
 
-      names(stock_data) <-
-        sub(paste0(selectedTicker(), "."), "", names(stock_data))
+      names(stock_data) <- sub(paste0(selectedTicker(), "."), "", names(stock_data))
 
       data(stock_data)
       selectedStockInfo(symbols_dt() |> filter(Symbol == selectedTicker()))
+      spinner$hide()
     })
 
     output$stockTitle <- renderText(selectedStockInfo()$Name)

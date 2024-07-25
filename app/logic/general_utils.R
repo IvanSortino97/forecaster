@@ -1,5 +1,6 @@
 box::use(shiny[img, tags, HTML, shinyOptions, getShinyOption, onSessionEnded],
          shiny.router[route_link],
+         bslib[card],
          bsicons[bs_icon],
          yaml[read_yaml, write_yaml])
 
@@ -47,3 +48,13 @@ header <- function(title) {
   )
 }
 
+#' @export
+title <- function(text){
+  tags$h4(text, style = "font-weight: bold; color: #464646; font-size: 20px;")
+
+}
+
+#' @export
+subtitle_box <- function(text){
+  card(text)
+}

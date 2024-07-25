@@ -40,6 +40,7 @@ get_symbols <- function(){
 #' @export
 get_data <- function(ticker, from){
 
+  message(sprintf("Getting '%s' data", ticker))
   SETT <- getShinyOption("SETTINGS")
 
   last <- as.Date(SETT$symbols$last_update_data$date)
@@ -128,6 +129,7 @@ months_ago <- function(months) {
 scrape_yahoo_finance <- function(ticker) {
   # Define the URL for Yahoo Finance
   url <- paste0("https://finance.yahoo.com/quote/", ticker)
+  message(sprintf('Scraping "%s"',url))
   webpage <- read_html(url)
 
   # Define the XPath expressions for scraping
@@ -267,8 +269,8 @@ make_stock_table <- function(dt){
 }
 
 #' @export
-ui_switch_inputs <- function(id1, id2){
-  div(style = "display: flex; align-items: center; justify-content: flex-start; gap: 15px;",
+ui_switch_inputs <- function(id1, id2, idSpinner){
+  div(style = "display: flex; align-items: flex-start; justify-content: flex-start; gap: 15px;",
       switchInput(
         inputId = id1,
         label = "Show list",
@@ -289,7 +291,11 @@ ui_switch_inputs <- function(id1, id2){
         onStatus = "success",
         onLabel = "✓",
         offLabel = "✕"
-      )
+      ),
+      div(
+        id = idSpinner,
+        style = "width: 20px; height: 20px; border-radius: 50%; align-self: flex-start;margin-top: 4px;"
+      ),
   )
 }
 
