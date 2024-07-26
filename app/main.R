@@ -44,7 +44,7 @@ server <- function(id) {
 
     homepage$server("homepage")
     op_stockInfo <- stockInfo$server("stockInfo")
-    stockAnalysis$server("stockAnalysis", stockInfo = reactive(op_stockInfo))
+    stockAnalysis$server("stockAnalysis", reactive(op_stockInfo))
 
 
     # -------------------------------------------------------------------------

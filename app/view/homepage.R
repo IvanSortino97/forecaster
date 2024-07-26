@@ -1,17 +1,30 @@
 # app/view/
 
 box::use(
-  shiny[div, moduleServer, NS],
+  shiny[div, moduleServer, NS, tagList, tags, hr],
+  shiny.router[route_link]
 )
 box::use(
   app / logic / general_utils[...],
+)
+
+page_links <- list(
+  list(title = "Home", page = "/"),
+  list(title = "Stock selection", page = "stockInfo"),
+  list(title = "Stock Analysis", page = "stockAnalysis")
 )
 
 #' @export
 ui <- function(id) {
   ns <- NS(id)
 
-div("Homepage")
+tagList(
+div("TODO: Homepage"),
+hr(),
+lapply(page_links, function(link) {
+  tags$a(href = route_link(link$page), link$title, tags$br())
+})
+)
 
 }
 
