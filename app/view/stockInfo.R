@@ -1,4 +1,4 @@
-box::use(shiny[..., div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons, renderUI, reactive, observe, req, conditionalPanel, textOutput, p, updateSelectizeInput, observeEvent, renderText, tags],
+box::use(shiny[ div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons, renderUI,uiOutput, reactive, observe, req, conditionalPanel, textOutput, p, updateSelectizeInput, observeEvent, renderText, tags],
          bslib[page_fillable, card, card_header,card_title, card_body, value_box, layout_column_wrap ],
          bsicons[bs_icon],
          shinyWidgets[updateSwitchInput],
@@ -99,6 +99,7 @@ ui <- function(id) {
     ),
     card(
       max_height = 200,
+      full_screen = TRUE,
       textOutput(ns("description"))
     ),
     card(

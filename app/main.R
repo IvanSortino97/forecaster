@@ -1,8 +1,8 @@
-box::use(shiny[..., moduleServer, NS, tags, renderText, req],
-         bslib[..., page_sidebar, page_fillable],
+box::use(shiny[observe, reactive, reactiveVal, moduleServer, NS, tags, renderText, req],
+         bslib[page_sidebar, page_fillable],
          shinybrowser[get_device, detect],
          shinytoastr[toastr_warning, useToastr],
-         shiny.router[..., router_ui, route, router_server])
+         shiny.router[get_page, router_ui, route, router_server])
 
 box::use(app / view[...],
          app / logic / general_utils[onStart, onEnd, header])
@@ -17,7 +17,6 @@ ui <- function(id) {
                useToastr(),
                detect(), # shinybrowser
                head$html, # head script and style
-               scroll_js,
 
     title = header("Forcaster", idtextOutput = ns("stockTicker")),
 
