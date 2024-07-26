@@ -9,7 +9,6 @@ box::use(app / view[...],
 
 
 
-
 #' @export
 ui <- function(id) {
   ns <- NS(id)
@@ -17,8 +16,8 @@ ui <- function(id) {
   page_sidebar(fillable_mobile = TRUE,
                useToastr(),
                detect(), # shinybrowser
-
-    sidebar$head,
+               head$html, # head script and style
+               scroll_js,
 
     title = header("Forcaster", idtextOutput = ns("stockTicker")),
 
@@ -49,15 +48,17 @@ server <- function(id) {
 
     # -------------------------------------------------------------------------
 
-    # Close sidebar when in Mobile mode
+    # Close sidebar when in Mobile mode + scroll on top when pages are changed
     active_page <- reactiveVal(start_page)
     observe({
-      req(get_device() != "Desktop", get_page() != active_page())
-      sidebar_toggle(id = "sidebarId", open = FALSE, session = session )
+      req(get_page() != active_page())
+      session$sendCustomMessage("scrollToTop", list())
       active_page(get_page())
+      req(get_device() != "Desktop")
+      sidebar_toggle(id = "sidebarId", open = FALSE, session = session )
     })
 
-    # Stock name top right
+    # Stock name printed top right of the header
     output$stockTicker <- renderText({
       req(op_stockInfo$name())
       sub("-.*", "", op_stockInfo$name())

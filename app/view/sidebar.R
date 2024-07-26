@@ -43,54 +43,5 @@ sidebar_component <- function(idSd){
 
 #' @export
 #' define style of a components and appear like pushed buttons
-head <- tags$head(
-  tags$style(
-    HTML(
-      "
-         a {
-          padding: 10px 15px;
-          text-decoration: none;
-          font-size: 18px;
-          color: black;
-          display: block;
-        }
-         a:hover {
-          background-color: grey;
-          color: white;
-        }
-         a.active {
-          background-color: blue;
-          color: white;
-        }
-      "
-    )
-  ),
-  tags$script(
-    HTML(
-      "
-        $(document).ready(function() {
-          function updateActiveClass() {
-            if (window.location.hash === '#!/') {
-              $('.sidebar a').removeClass('active');
-            }
-          }
-
-          // Run on initial load
-          updateActiveClass();
-
-          // Add click event listener
-          $('.sidebar a').click(function() {
-            $('.sidebar a').removeClass('active');
-            $(this).addClass('active');
-          });
-
-          // Monitor hash changes
-          $(window).on('hashchange', function() {
-            updateActiveClass();
-          });
-        });
-      "
-    )
-  )
-)
+#' moved to app/view/head.R
 
