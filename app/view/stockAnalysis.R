@@ -2,7 +2,7 @@
 
 box::use(
   shiny[...,observe, req, reactiveValues, div, moduleServer, NS,],
-  bslib[page_fillable, card, card_header, card_body],
+  bslib[..., page_fillable, card, card_header, card_body],
   data.table[data.table],
   echarts4r[..., renderEcharts4r, echarts4rOutput, ],
   shiny.router[is_page]
@@ -20,15 +20,23 @@ ui <- function(id) {
 
     title("Stock Analysis"),
     subtitle("Perform analysis on returns, ACF, PACF e other things ... "),
-    card(
-      card_header("Returns Plot"),
-      echarts4rOutput(ns("returns_plot")),
-      hr(),
-      echarts4rOutput(ns("sqReturns_plot")),
-      hr(),
-      echarts4rOutput(ns("pricesDistr_plot"))
+    navset_card_tab(
+      height = 450,
+      full_screen = TRUE,
+      #title = "Plots",
+      nav_panel(
+        "Returns",
+        echarts4rOutput(ns("returns_plot"))
+      ),
+      nav_panel(
+        "Squared returns",
+        echarts4rOutput(ns("sqReturns_plot"))
+      ),
+      nav_panel(
+        "Distribution",
+        echarts4rOutput(ns("pricesDistr_plot"))
+      )
     )
-
 
 )
 }
@@ -63,7 +71,10 @@ server <- function(id, stockInfo) {
                lineStyle = list(color = "#5756ff", width = 1),
                legend = FALSE) |>
         e_title("Daily Returns") |>
-        e_tooltip(trigger = "axis")
+        e_tooltip(trigger = "axis") |>
+        e_legend(FALSE) |>
+        e_grid(right = 5, left = 5) |>
+        e_datazoom(type = "slider",x_axis_index = 0, toolbox = T)
     })
 
     output$sqReturns_plot <- renderEcharts4r({
@@ -77,7 +88,10 @@ server <- function(id, stockInfo) {
                lineStyle = list(color = "#5756ff", width = 1),
                legend = FALSE) |>
         e_title("Squared Daily Returns") |>
-        e_tooltip(trigger = "axis")
+        e_tooltip(trigger = "axis") |>
+        e_legend(FALSE) |>
+        e_grid(right = 5, left = 5) |>
+        e_datazoom(type = "slider",x_axis_index = 0, toolbox = T)
     })
 
     output$pricesDistr_plot <- renderEcharts4r({
@@ -87,7 +101,9 @@ server <- function(id, stockInfo) {
         e_charts() |>
         e_density(daily.returns) |>
         e_title("Returns Distribution") |>
-        e_tooltip(trigger = "axis")
+        e_tooltip(trigger = "axis") |>
+        e_legend(FALSE) |>
+        e_grid(right = 5, left = 5, bottom = 5)
     })
 
 
