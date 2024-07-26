@@ -1,6 +1,7 @@
-box::use(shiny[ actionButton, tags, HTML],
-         bslib[sidebar, accordion, accordion_panel],
-         shiny.router[route_link],
+box::use(shiny[ actionButton, tags, HTML, observe, reactiveVal, moduleServer, req],
+         bslib[sidebar, accordion, accordion_panel, sidebar_toggle],
+         shiny.router[route_link, get_page],
+         shinybrowser[get_device],
          bsicons[bs_icon])
 
 accordion_section <- function(title, icon = NULL, page){
@@ -8,7 +9,10 @@ accordion_section <- function(title, icon = NULL, page){
 }
 
 #' @export
-sidebar_component <- sidebar(
+sidebar_component <- function(idSd){
+  sidebar(
+
+  id = idSd,
 
   # Home
   accordion_section(title = "Home",
@@ -34,7 +38,7 @@ sidebar_component <- sidebar(
     )
   )
 
-)
+)}
 
 
 #' @export

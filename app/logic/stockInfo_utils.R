@@ -1,5 +1,6 @@
 box::use(
   bslib[card_body, card],
+  bsicons[bs_icon],
   echarts4r[e_dims, e_y_axis, e_x_axis,e_show_loading,e_toolbox,e_grid,e_datazoom,e_area, e_candle, echarts4rOutput, e_legend, e_title, e_tooltip, e_line, e_charts],
   TTR[stockSymbols],
   dplyr[filter, select],
@@ -13,6 +14,7 @@ box::use(
   reactable[reactable, reactableTheme,colDef],
   utils[tail],
 )
+box::use(app / logic / general_utils[tryCatch_toaster])
 
 #' @export
 get_symbols <- function(){
@@ -21,14 +23,18 @@ get_symbols <- function(){
 
   last <- as.Date(SETT$symbols$last_update)
   time_passed <-  Sys.Date() - last
+  symbols <- NULL
 
   if(time_passed > 1){
+
+    tryCatch_toaster({
 
     symbols <- TTR::stockSymbols(exchange = "NASDAQ")[, c(1, 2, 13, 8, 11)]
     saveRDS(symbols, file = "app/files/symbols.rds")
 
     SETT$symbols$last_update <- as.character(Sys.Date())
     shinyOptions(SETTINGS = SETT)
+    })
 
   } else {
     symbols <- readRDS(file = "app/files/symbols.rds")
@@ -46,8 +52,12 @@ get_data <- function(ticker, from){
   last <- as.Date(SETT$symbols$last_update_data$date)
   time_passed <-  Sys.Date() - last
   last_ticker <- SETT$symbols$last_update_data$ticker
+  data <- NULL
 
   if (time_passed > 1 || ticker != last_ticker) {
+
+    tryCatch_toaster({
+
     data <- getSymbols(
       Symbols = ticker,
       src = "yahoo",
@@ -59,6 +69,7 @@ get_data <- function(ticker, from){
     SETT$symbols$last_update_data$date <- as.character(Sys.Date())
     SETT$symbols$last_update_data$ticker <- as.character(ticker)
     shinyOptions(SETTINGS = SETT)
+    })
 
   } else {
     message(sprintf("Reading cached '%s' data",ticker))
@@ -79,6 +90,9 @@ get_sp500 <- function(){
 
   if (time_passed > 1) {
     url <- "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+    symbols <- NULL
+
+    tryCatch_toaster({
 
     message("Fetching SP500 list")
     webpage <- read_html(url)
@@ -92,6 +106,7 @@ get_sp500 <- function(){
     SETT$symbols$last_update_sp500 <- as.character(Sys.Date())
     shinyOptions(SETTINGS = SETT)
 
+    })
   } else {
     symbols <- readRDS(file = "app/files/symbolsSP500.rds")
   }
@@ -130,7 +145,7 @@ scrape_yahoo_finance <- function(ticker) {
   # Define the URL for Yahoo Finance
   url <- paste0("https://finance.yahoo.com/quote/", ticker)
   message(sprintf('Scraping "%s"',url))
-  webpage <- read_html(url)
+  webpage <- NULL
 
   # Define the XPath expressions for scraping
   scrapelist <- list(
@@ -175,7 +190,13 @@ scrape_yahoo_finance <- function(ticker) {
     return(data[1])
   }
 
-  return(lapply(scrapelist, extract_data))
+  ret <- NULL
+  tryCatch_toaster({
+    webpage <- read_html(url)
+    ret <- lapply(scrapelist, extract_data)
+  })
+
+  return(ret)
 }
 
 #' @export
@@ -294,7 +315,7 @@ ui_switch_inputs <- function(id1, id2, idSpinner){
       ),
       div(
         id = idSpinner,
-        style = "width: 20px; height: 20px; border-radius: 50%; align-self: flex-start;margin-top: 4px;"
+        style = "width: 21.33px; height: 21.33px; border-radius: 50%; align-self: flex-start;margin-top: 3.6px;"
       ),
   )
 }
@@ -478,4 +499,32 @@ ui_source_link <- function(ticker){
     ),
     style = "font-size: 12px; color: #7f8189; display: inline;"
   )
+}
+
+#' @export
+get_variation<-function(data){
+
+  old <- tail(data,2)[1,]$Close
+  new <- tail(data,2)[2,]$Close
+  variation <- round((new-old)/old*100,4)
+
+  r <- NULL
+
+  if(variation > 0 ){
+    text <- paste0("+ ", abs(variation),"%")
+    r <- list(icon = bs_icon("graph-up-arrow", class = "text-success"),
+              var = text,
+              status = "+")
+  } else if( variation < 0){
+    text <- paste0("- ", abs(variation),"%")
+    r <- list(icon = bs_icon("graph-down-arrow", class = "text-danger"),
+              var = text,
+              status = "-")
+  } else {
+    r <- list(icon = bs_icon("dash-lg"),
+              var = "-",
+              status = "neutral")
+  }
+
+  return(r)
 }

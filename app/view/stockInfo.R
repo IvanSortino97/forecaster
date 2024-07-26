@@ -1,16 +1,16 @@
-box::use(shiny[div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons, renderUI, reactive, observe, req, conditionalPanel, textOutput, p, updateSelectizeInput, observeEvent, renderText, tags],
+box::use(shiny[..., div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons, renderUI, reactive, observe, req, conditionalPanel, textOutput, p, updateSelectizeInput, observeEvent, renderText, tags],
          bslib[page_fillable, card, card_header,card_title, card_body, value_box, layout_column_wrap ],
          bsicons[bs_icon],
          shinyWidgets[updateSwitchInput],
          dplyr[filter,],
          echarts4r[echarts4rOutput, renderEcharts4r],
          zoo[coredata, index],
-         data.table[data.table],
+         data.table[data.table, setorder],
          spsComps[addLoader],
          reactable[reactableOutput, renderReactable, getReactableState],
 )
-box::use(app / logic / general_utils[title, subtitle])
-box::use(app / logic / stockInfo_utils[get_symbols, get_sp500, get_data,
+box::use(app / logic / general_utils[title, subtitle, tryCatch_toaster])
+box::use(app / logic / stockInfo_utils[get_symbols, get_sp500, get_data,get_variation,
                                        make_list, make_stock_table, make_stock_plot, make_volume_plot,
                                        years_ago, months_ago, scrape_yahoo_finance, make_stat_table,
                                        ui_switch_inputs, ui_title_plot_card, ui_source_link])
@@ -52,10 +52,12 @@ ui <- function(id) {
                        tickerId = ns("stockUrl")),
     layout_column_wrap(
       width = "200px",
+
       value_box(
         title = "Stock Price",
         value = textOutput(ns("stockPrice")),
-        showcase = bs_icon("graph-up")
+        showcase = uiOutput(ns("stockPriceIcon")),
+        uiOutput(ns("stockPriceVariation"))
       ),
       value_box(
         title = "52 Week Range",
@@ -123,10 +125,11 @@ server <- function(id, ...) {
 
     spinner <- addLoader$new(
       target_selector =  "loadingDiv",
-      type = "dual-ring",
-      height = "20px",
+      type = "facebook", #ripple or dual-ring
+      height = "21.33px",
       color = "#757575"
     )
+
 
     sp500 <- get_sp500()$Symbol
     symbols_dt <- reactive({
@@ -184,6 +187,7 @@ server <- function(id, ...) {
                                #Date = index(stock_data),
                                coredata(stock_data))
 
+      setorder(stock_data, date) # Set order to ensure consistency while using tail and head function
       names(stock_data) <- sub(paste0(selectedTicker(), "."), "", names(stock_data))
 
       data(stock_data)
@@ -205,14 +209,32 @@ server <- function(id, ...) {
 
 
     output$volumePlot <- renderEcharts4r({
-
       req(data())
       make_volume_plot(data(), days = 61)
+    })
+
+    variation <- reactive({
+      req(data())
+      get_variation(data())
+      })
+
+    output$stockPriceIcon <- renderUI({
+      req(data())
+      variation()$icon
     })
 
     output$stockPrice <- renderText({
       req(scraped_info())
       scraped_info()$stockPrice
+    })
+    output$stockPriceVariation <- renderUI({
+      req(variation())
+
+      switch (variation()$status,
+        "+" = tags$p(variation()$var, style = "color: #269b3c;"),
+        "-" = tags$p(variation()$var, style = "color: #ca2626"),
+        "neutral" = tags$p(variation()$var, style = "color: #ca2626")
+      )
     })
     output$fiftyTwoWeekRange <- renderText({
       req(scraped_info())
@@ -264,7 +286,7 @@ server <- function(id, ...) {
     return(
       list(
         ticker = reactive(selectedTicker()),
-        selectedStockInfo = reactive(selectedStockInfo()$Name),
+        name = reactive(selectedStockInfo()$Name),
         data = reactive(data()),
         data_xts = reactive(data_xts())
       )
