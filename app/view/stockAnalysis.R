@@ -52,17 +52,6 @@ server <- function(id, stockInfo) {
 
     r <- reactiveValues()
 
-
-    # observe({
-    #   nav_insert(
-    #     "navsetPlots", target = "Returns",
-    #     nav_panel(
-    #       if(get_device() == "Mobile") "Sq. returns" else "Squared returns",
-    #       echarts4rOutput(ns("sqReturns_plot"))
-    #     )
-    #   )
-    # })
-
     observe({
       req(stockInfo()$data_xts(), is_page("stockAnalysis") )
 
