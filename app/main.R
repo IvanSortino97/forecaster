@@ -1,5 +1,5 @@
 box::use(shiny[observe, reactive, reactiveVal, moduleServer, NS, tags, renderText, req],
-         bslib[page_sidebar, page_fillable],
+         bslib[..., page_sidebar, page_fillable],
          shinybrowser[get_device, detect],
          shinytoastr[toastr_warning, useToastr],
          shiny.router[get_page, router_ui, route, router_server])

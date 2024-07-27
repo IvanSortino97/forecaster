@@ -55,6 +55,7 @@ html <- tags$head(
       "
     )
   ),
+  #scroll to top when page is changed
   tags$script(
     HTML(
       "
@@ -69,6 +70,27 @@ html <- tags$head(
       });
     });
     "
+    )
+  ),
+  # Resize Squared returns title tab
+  tags$script(
+    HTML(
+      'document.addEventListener("DOMContentLoaded", function() {
+        function updateText() {
+          var element = document.querySelector("#app-stockAnalysis-navsetPlots li:nth-child(2) a");
+          if (window.innerWidth <= 767) {
+            element.textContent = "Sq. returns";
+          } else {
+            element.textContent = "Squared returns";
+          }
+        }
+
+        // Run on initial load
+        updateText();
+
+        // Run on window resize
+        // window.addEventListener("resize", updateText);
+      });'
     )
   )
 )

@@ -5,12 +5,15 @@ box::use(
   bslib[..., page_fillable, card, card_header, card_body],
   data.table[data.table],
   echarts4r[..., renderEcharts4r, echarts4rOutput, ],
-  shiny.router[is_page]
+  shiny.router[is_page],
+  shinybrowser[get_device],
 )
 box::use(
   app / logic / general_utils[title, subtitle ],
   app / logic / stockAnalysis_utils[get_returns, ],
 )
+
+#mobile = get_device()
 
 #' @export
 ui <- function(id) {
@@ -20,16 +23,16 @@ ui <- function(id) {
 
     title("Stock Analysis"),
     subtitle("Perform analysis on returns, ACF, PACF e other things ... "),
-    navset_card_tab(
-      height = 450,
+    navset_card_pill(
+      height = 400,
       full_screen = TRUE,
-      #title = "Plots",
+      id = ns("navsetPlots"),
       nav_panel(
         "Returns",
         echarts4rOutput(ns("returns_plot"))
       ),
       nav_panel(
-        "Squared returns",
+        "Sq. returns",
         echarts4rOutput(ns("sqReturns_plot"))
       ),
       nav_panel(
@@ -48,6 +51,17 @@ server <- function(id, stockInfo) {
     ns <- session$ns
 
     r <- reactiveValues()
+
+
+    # observe({
+    #   nav_insert(
+    #     "navsetPlots", target = "Returns",
+    #     nav_panel(
+    #       if(get_device() == "Mobile") "Sq. returns" else "Squared returns",
+    #       echarts4rOutput(ns("sqReturns_plot"))
+    #     )
+    #   )
+    # })
 
     observe({
       req(stockInfo()$data_xts(), is_page("stockAnalysis") )
