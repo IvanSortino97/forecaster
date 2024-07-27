@@ -71,7 +71,30 @@ html <- tags$head(
         // window.addEventListener("resize", updateText);
       });'
     )
-  )
+  ),
+  # show scroll info
+  tags$script(
+    HTML(
+      '
+      document.addEventListener("DOMContentLoaded", function() {
+        function updateText() {
+          var element = document.querySelector("#app-stockAnalysis-infoMobile");
+          if (window.innerWidth <= 767) {
+            element.textContent = "Scroll to see more";
+          } else {
+            element.textContent = "";
+          }
+        }
+
+        // Call updateText on load
+        updateText();
+
+        // Update text on window resize
+        window.addEventListener("resize", updateText);
+      });
+      '
+    )
+  ),
 )
 
 

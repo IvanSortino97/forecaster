@@ -35,11 +35,18 @@ ui <- function(id) {
       )
     ),
     card(
-      card_header("Summary statistics"),
+      card_header(
+        div("Summary statistics",
+            p("", id = ns("infoMobile"), class = "p_sub_small", style = "display: inline; padding-left: 10px")
+            )),
       layout_column_wrap(
         width = 1/2,
-        div(card_header("Prices", class = "p-0"), reactableOutput(ns("summaryPrice"), width = "95%")),
-        div(card_header("Returns", class = "p-0"), reactableOutput(ns("summaryReturns"), width = "95%"))
+        height_mobile = "220px",
+        fillable = F,
+        div(card_header("Prices", class = "p-0"),
+            reactableOutput(ns("summaryPrice"), width = "95%")),
+        div(card_header("Returns", class = "p-0"),
+            reactableOutput(ns("summaryReturns"), width = "95%"))
       )
 
       )
