@@ -4,16 +4,17 @@ box::use(
   shiny[...,observe, req, reactiveValues, div, moduleServer, NS,],
   bslib[..., page_fillable, card, card_header, card_body],
   data.table[data.table],
-  echarts4r[..., renderEcharts4r, echarts4rOutput, ],
+  echarts4r[renderEcharts4r, echarts4rOutput, ],
+  reactable[renderReactable, reactableOutput],
   shiny.router[is_page],
   shinybrowser[get_device],
+
 )
 box::use(
   app / logic / general_utils[title, subtitle ],
-  app / logic / stockAnalysis_utils[get_returns, ],
+  app / logic / stockAnalysis_utils[get_returns,
+                                    make_analysis_plots, make_price_table],
 )
-
-#mobile = get_device()
 
 #' @export
 ui <- function(id) {
@@ -26,20 +27,22 @@ ui <- function(id) {
     navset_card_underline(
       height = 400,
       full_screen = TRUE,
-      id = ns("navsetPlots"),
-      nav_panel(
-        "Returns",
-        echarts4rOutput(ns("returns_plot"))
+      nav_panel( "Returns", echarts4rOutput(ns("returns_plot"))
       ),
-      nav_panel(
-        "Sq. returns",
-        echarts4rOutput(ns("sqReturns_plot"))
+      nav_panel( "Sq. returns", echarts4rOutput(ns("sqReturns_plot"))
       ),
-      nav_panel(
-        "Distribution",
-        echarts4rOutput(ns("pricesDistr_plot"))
+      nav_panel( "Distribution", echarts4rOutput(ns("pricesDistr_plot"))
       )
-    )
+    ),
+    card(
+      card_header("Summary statistics"),
+      layout_column_wrap(
+        width = 1/2,
+        div(card_header("Prices", class = "p-0"), reactableOutput(ns("summaryPrice"), width = "95%")),
+        div(card_header("Returns", class = "p-0"), reactableOutput(ns("summaryReturns"), width = "95%"))
+      )
+
+      )
 
 )
 }
@@ -51,6 +54,8 @@ server <- function(id, stockInfo) {
     ns <- session$ns
 
     r <- reactiveValues()
+    plots = reactiveVal()
+    stats = reactiveVal()
 
     observe({
       req(stockInfo()$data_xts(), is_page("stockAnalysis") )
@@ -61,54 +66,32 @@ server <- function(id, stockInfo) {
       r$squared_returns <- ret$squared_returns
       r$squared_returns_dt <- ret$squared_returns_dt
       r$price <- data.frame(price = stockInfo()$data()$Close)
+      plots(make_analysis_plots(r, stockInfo()$ticker()))
+      stats(make_price_table(stockInfo()$data_xts(), r$returns))
+
     })
 
     output$returns_plot <- renderEcharts4r({
-      req(r$returns_dt)
-
-      r$returns_dt |>
-        e_charts(date) |>
-        e_line(daily.returns,
-               smooth = FALSE,
-               symbol = "none",
-               lineStyle = list(color = "#5756ff", width = 1),
-               legend = FALSE) |>
-        e_title(paste0(stockInfo()$ticker()," - Daily Returns")) |>
-        e_tooltip(trigger = "axis") |>
-        e_legend(FALSE) |>
-        e_grid(right = 5, left = 5) |>
-        e_datazoom(type = "slider",x_axis_index = 0, toolbox = T)
+      req(plots())
+      plots()$daily_returns_plot
     })
-
     output$sqReturns_plot <- renderEcharts4r({
-      req(r$squared_returns_dt)
-
-      r$squared_returns_dt |>
-        e_charts(date) |>
-        e_line(squared.returns,
-               smooth = FALSE,
-               symbol = "none",
-               lineStyle = list(color = "#5756ff", width = 1),
-               legend = FALSE) |>
-        e_title(paste0(stockInfo()$ticker()," - Squared Daily Returns")) |>
-        e_tooltip(trigger = "axis") |>
-        e_legend(FALSE) |>
-        e_grid(right = 5, left = 5) |>
-        e_datazoom(type = "slider",x_axis_index = 0, toolbox = T)
+      req(plots())
+      plots()$squared_returns_plot
     })
-
     output$pricesDistr_plot <- renderEcharts4r({
-      req(r$returns_dt)
-
-      r$returns_dt |>
-        e_charts() |>
-        e_density(daily.returns) |>
-        e_title(paste0(stockInfo()$ticker()," - Returns Distribution")) |>
-        e_tooltip(trigger = "axis") |>
-        e_legend(FALSE) |>
-        e_grid(right = 5, left = 5, bottom = 5)
+      req(plots())
+      plots()$returns_distribution_plot
     })
 
+    output$summaryPrice <- renderReactable({
+      req(stats())
+      stats()$table_prices
+    })
+    output$summaryReturns <- renderReactable({
+      req(stats())
+      stats()$table_returns
+    })
 
 
   })

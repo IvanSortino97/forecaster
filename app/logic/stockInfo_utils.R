@@ -255,7 +255,12 @@ make_stat_table <- function(dt, type){
 
   dt |> reactable(
     columns = list(value = colDef(
-      style = list(textAlign = "right", fontWeight = "bold")
+      style = list(
+        textAlign = "right",
+        fontWeight = "600",
+        fontSize = "0.9rem",
+        lineHeight = "1.375rem"
+      )
     )),
     compact = TRUE,
     theme = reactableTheme(
