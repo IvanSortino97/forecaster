@@ -73,7 +73,7 @@ server <- function(id, stockInfo) {
                symbol = "none",
                lineStyle = list(color = "#5756ff", width = 1),
                legend = FALSE) |>
-        e_title("Daily Returns") |>
+        e_title(paste0(stockInfo()$ticker()," - Daily Returns")) |>
         e_tooltip(trigger = "axis") |>
         e_legend(FALSE) |>
         e_grid(right = 5, left = 5) |>
@@ -90,7 +90,7 @@ server <- function(id, stockInfo) {
                symbol = "none",
                lineStyle = list(color = "#5756ff", width = 1),
                legend = FALSE) |>
-        e_title("Squared Daily Returns") |>
+        e_title(paste0(stockInfo()$ticker()," - Squared Daily Returns")) |>
         e_tooltip(trigger = "axis") |>
         e_legend(FALSE) |>
         e_grid(right = 5, left = 5) |>
@@ -103,7 +103,7 @@ server <- function(id, stockInfo) {
       r$returns_dt |>
         e_charts() |>
         e_density(daily.returns) |>
-        e_title("Returns Distribution") |>
+        e_title(paste0(stockInfo()$ticker()," - Returns Distribution")) |>
         e_tooltip(trigger = "axis") |>
         e_legend(FALSE) |>
         e_grid(right = 5, left = 5, bottom = 5)
