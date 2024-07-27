@@ -309,7 +309,7 @@ ui_switch_inputs <- function(id1, id2, idSpinner){
         size = "mini",
         inline = T,
         value = TRUE,
-        onStatus = "success",
+        #onStatus = "success",
         onLabel = "✓",
         offLabel = "✕"
       ),

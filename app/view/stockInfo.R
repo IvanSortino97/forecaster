@@ -21,7 +21,7 @@ ui <- function(id) {
 
   page_fillable(
 
-    title("Stock selection"),
+    title("Stock Selection"),
     subtitle("Selection and analysis dashboard for NASDAQ Stocks with interactive data visualization and financial metrics"),
 
     selectizeInput(

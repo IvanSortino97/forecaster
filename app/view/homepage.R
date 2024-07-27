@@ -10,7 +10,7 @@ box::use(
 
 page_links <- list(
   list(title = "Home", page = "/"),
-  list(title = "Stock selection", page = "stockInfo"),
+  list(title = "Stock Selection", page = "stockInfo"),
   list(title = "Stock Analysis", page = "stockAnalysis")
 )
 

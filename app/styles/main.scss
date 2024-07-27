@@ -3,6 +3,23 @@
 
 }
 
+/* Sidebar custom themes */
+.custom-accordion-section {
+  padding: 10px 15px;
+  text-decoration: none;
+  font-size: 18px;
+  color: black;
+  display: block;
+}
+.custom-accordion-section:hover {
+  background-color: grey;
+  color: white;
+}
+.custom-accordion-section.active {
+  background-color: blue;
+  color: white;
+}
+
 .custom-radio-group .btn {
   padding: 2px 5px;  /* Adjust padding to make the buttons smaller */
   font-size: 10px;   /* Adjust font size */

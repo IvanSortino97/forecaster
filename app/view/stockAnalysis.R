@@ -23,7 +23,7 @@ ui <- function(id) {
 
     title("Stock Analysis"),
     subtitle("Perform analysis on returns, ACF, PACF e other things ... "),
-    navset_card_pill(
+    navset_card_underline(
       height = 400,
       full_screen = TRUE,
       id = ns("navsetPlots"),
