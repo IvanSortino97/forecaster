@@ -7,6 +7,7 @@ box::use(
   echarts4r[e_bar, e_x_axis,e_datazoom,e_grid,e_legend,e_tooltip,e_title,e_line,e_charts,e_density]
 )
 
+box::use(app / styles / colors[custom_blue])
 
 #' @export
 get_returns <- function(data_xts){
@@ -32,7 +33,7 @@ make_analysis_plots <- function(dt, ticker) {
     e_line(daily.returns,
            smooth = FALSE,
            symbol = "none",
-           lineStyle = list(color = "#5756ff", width = 1),
+           lineStyle = list(color = custom_blue, width = 1),
            legend = FALSE) |>
     e_title(paste0(ticker, " - Daily Returns")) |>
     e_tooltip(trigger = "axis") |>
@@ -46,7 +47,7 @@ make_analysis_plots <- function(dt, ticker) {
     e_line(squared.returns,
            smooth = FALSE,
            symbol = "none",
-           lineStyle = list(color = "#5756ff", width = 1),
+           lineStyle = list(color = custom_blue, width = 1),
            legend = FALSE) |>
     e_title(paste0(ticker, " - Squared Daily Returns")) |>
     e_tooltip(trigger = "axis") |>
@@ -129,16 +130,26 @@ make_price_table <- function(xts, ret){
 
 
 #' @export
+#' compute default lag
+get_lag <- function(returns){
+  N <- length(returns)
+  m <- 1
+  lag <- floor(10 * log10(N / m))
+  lag <- min(lag, N - 1)
+  return(lag)
+}
+
+#' @export
 #' ACF/PACF plot function
-make_cf_plot <- function(returns, sq_returns, lag = NULL, ticker){
+make_cf_plot <- function(returns, sq_returns, lag = NULL, ticker) {
 
   # Compute ACF and PACF of daily returns
-  acf_values <- acf(returns, lag.max = lag, plot = F)
-  pacf_values <- pacf(returns, lag.max = lag, plot = F)
+  acf_values <- acf(returns, lag.max = lag, plot = FALSE)
+  pacf_values <- pacf(returns, lag.max = lag, plot = FALSE)
 
   # Compute ACF and PACF of squared returns
-  acf_sq_values <- acf(sq_returns, lag.max = lag, plot = F)
-  pacf_sq_values <- pacf(sq_returns, lag.max = lag, plot = F)
+  acf_sq_values <- acf(sq_returns, lag.max = lag, plot = FALSE)
+  pacf_sq_values <- pacf(sq_returns, lag.max = lag, plot = FALSE)
 
   # Calculate the confidence intervals
   n <- length(returns)  # Number of observations
@@ -146,71 +157,89 @@ make_cf_plot <- function(returns, sq_returns, lag = NULL, ticker){
 
   # Create data table for ACF values with confidence intervals for returns
   acf_dt <- data.table(
-    lag = acf_values$lag[-1, 1, 1],  # Remove the first lag (autocorrelation at lag 0)
-    acf = acf_values$acf[-1, 1, 1],
-    lower = -conf_interval,
-    upper = conf_interval
+    lag = c(0, acf_values$lag[-1, 1, 1]),  # Include the first lag (autocorrelation at lag 0)
+    acf = c(NA, acf_values$acf[-1, 1, 1]),
+    lower = c(-conf_interval, rep(-conf_interval, length(acf_values$lag[-1, 1, 1]))),
+    upper = c(conf_interval, rep(conf_interval, length(acf_values$lag[-1, 1, 1])))
   )
 
   # Create data table for PACF values with confidence intervals for returns
   pacf_dt <- data.table(
-    lag = pacf_values$lag[-1, 1, 1],  # Remove the first lag (partial autocorrelation at lag 0)
-    pacf = pacf_values$acf[-1, 1, 1],
-    lower = -conf_interval,
-    upper = conf_interval
+    lag = c(0, pacf_values$lag[-1, 1, 1]),  # Include the first lag (partial autocorrelation at lag 0)
+    pacf = c(NA, pacf_values$acf[-1, 1, 1]),
+    lower = c(-conf_interval, rep(-conf_interval, length(pacf_values$lag[-1, 1, 1]))),
+    upper = c(conf_interval, rep(conf_interval, length(pacf_values$lag[-1, 1, 1])))
   )
 
   # Create data table for ACF values with confidence intervals for squared returns
   acf_sq_dt <- data.table(
-    lag = acf_sq_values$lag[-1, 1, 1],  # Remove the first lag (autocorrelation at lag 0)
-    acf = acf_sq_values$acf[-1, 1, 1],
-    lower = -conf_interval,
-    upper = conf_interval
+    lag = c(0, acf_sq_values$lag[-1, 1, 1]),  # Include the first lag (autocorrelation at lag 0)
+    acf = c(NA, acf_sq_values$acf[-1, 1, 1]),
+    lower = c(-conf_interval, rep(-conf_interval, length(acf_sq_values$lag[-1, 1, 1]))),
+    upper = c(conf_interval, rep(conf_interval, length(acf_sq_values$lag[-1, 1, 1])))
   )
 
   # Create data table for PACF values with confidence intervals for squared returns
   pacf_sq_dt <- data.table(
-    lag = pacf_sq_values$lag[-1, 1, 1],  # Remove the first lag (partial autocorrelation at lag 0)
-    pacf = pacf_sq_values$acf[-1, 1, 1],
-    lower = -conf_interval,
-    upper = conf_interval
+    lag = c(0, pacf_sq_values$lag[-1, 1, 1]),  # Include the first lag (partial autocorrelation at lag 0)
+    pacf = c(NA, pacf_sq_values$acf[-1, 1, 1]),
+    lower = c(-conf_interval, rep(-conf_interval, length(pacf_sq_values$lag[-1, 1, 1]))),
+    upper = c(conf_interval, rep(conf_interval, length(pacf_sq_values$lag[-1, 1, 1])))
   )
 
-  # Plot ACF with confidence intervals using echarts4r for returns
+  bar_color <- 'gray'
+  bar_width <- 1
+  conf_color <- custom_blue
+
+  # ACF Plot for Daily Returns
   acf_plot <- acf_dt |>
     e_charts(lag) |>
-    e_bar(acf, name = "ACF", itemStyle = list(barWidth = 5)) |>
-    e_line(lower, name = "Confidence Interval", lineStyle = list(type = "dotted", color = 'blue')) |>
-    e_line(upper, name = "Confidence Interval", lineStyle = list(type = "dotted", color = 'blue')) |>
-    e_title(sprintf("Autocorrelation Function of %s Daily Returns", ticker)) |>
-    e_tooltip(trigger = "axis")
+    e_bar(acf, name = "ACF", itemStyle = list(color = bar_color, barWidth = bar_width)) |>
+    e_line(lower, name = "Confidence Interval", lineStyle = list(type = "dotted", color = conf_color), smooth = FALSE, symbol = "none") |>
+    e_line(upper, name = "Confidence Interval", lineStyle = list(type = "dotted", color = conf_color), smooth = FALSE, symbol = "none") |>
+    e_title("Autocorrelation Function", subtext = sprintf("%s - Daily Returns", ticker)) |>
+    e_tooltip(trigger = "axis") |>
+    e_x_axis(name = "Lag", nameLocation = "middle", nameGap = 28, min = 0, max = lag) |>
+    e_grid(bottom = "15%") |>
+    e_legend(FALSE)
 
-  # Plot PACF with confidence intervals using echarts4r for returns
+  # PACF Plot for Daily Returns
   pacf_plot <- pacf_dt |>
     e_charts(lag) |>
-    e_bar(pacf, name = "PACF", itemStyle = list(barWidth = 5)) |>
-    e_line(lower, name = "Confidence Interval", lineStyle = list(type = "dotted", color = 'blue')) |>
-    e_line(upper, name = "Confidence Interval", lineStyle = list(type = "dotted", color = 'blue')) |>
-    e_title(sprintf("Partial Autocorrelation Function of %s Daily Returns", ticker)) |>
-    e_tooltip(trigger = "axis")
+    e_bar(pacf, name = "PACF", itemStyle = list(color = bar_color, barWidth = bar_width)) |>
+    e_line(lower, name = "Confidence Interval", lineStyle = list(type = "dotted", color = conf_color), smooth = FALSE, symbol = "none") |>
+    e_line(upper, name = "Confidence Interval", lineStyle = list(type = "dotted", color = conf_color), smooth = FALSE, symbol = "none") |>
+    e_title("Partial Autocorrelation Function", subtext = sprintf("%s - Daily Returns", ticker)) |>
+    e_tooltip(trigger = "axis") |>
+    e_x_axis(name = "Lag", nameLocation = "middle", nameGap = 28, min = 0, max = lag) |>
+    e_grid(bottom = "15%") |>
+    e_legend(FALSE)
 
-  # Plot ACF with confidence intervals using echarts4r for squared returns
+  # ACF Plot for Squared Returns
   acf_sq_plot <- acf_sq_dt |>
     e_charts(lag) |>
-    e_bar(acf, name = "ACF", itemStyle = list(barWidth = 5)) |>
-    e_line(lower, name = "Confidence Interval", lineStyle = list(type = "dotted", color = 'blue')) |>
-    e_line(upper, name = "Confidence Interval", lineStyle = list(type = "dotted", color = 'blue')) |>
-    e_title(sprintf("Autocorrelation Function of %s Squared Returns", ticker)) |>
-    e_tooltip(trigger = "axis")
+    e_bar(acf, name = "ACF", itemStyle = list(color = bar_color, barWidth = bar_width)) |>
+    e_line(lower, name = "Confidence Interval", lineStyle = list(type = "dotted", color = conf_color), smooth = FALSE, symbol = "none") |>
+    e_line(upper, name = "Confidence Interval", lineStyle = list(type = "dotted", color = conf_color), smooth = FALSE, symbol = "none") |>
+    e_title("Autocorrelation Function", subtext = sprintf("%s - Squared Returns", ticker)) |>
+    e_tooltip(trigger = "axis") |>
+    e_x_axis(name = "Lag", nameLocation = "middle", nameGap = 28, min = 0, max = lag) |>
+    e_grid(bottom = "15%") |>
+    e_legend(FALSE)
 
-  # Plot PACF with confidence intervals using echarts4r for squared returns
+  # PACF Plot for Squared Returns
   pacf_sq_plot <- pacf_sq_dt |>
     e_charts(lag) |>
-    e_bar(pacf, name = "PACF", itemStyle = list(barWidth = 5)) |>
-    e_line(lower, name = "Confidence Interval", lineStyle = list(type = "dotted", color = 'blue')) |>
-    e_line(upper, name = "Confidence Interval", lineStyle = list(type = "dotted", color = 'blue')) |>
-    e_title(sprintf("Partial Autocorrelation Function of %s Squared Returns", ticker)) |>
-    e_tooltip(trigger = "axis")
+    e_bar(pacf, name = "PACF", itemStyle = list(color = bar_color, barWidth = bar_width)) |>
+    e_line(lower, name = "Confidence Interval", lineStyle = list(type = "dotted", color = conf_color), smooth = FALSE, symbol = "none") |>
+    e_line(upper, name = "Confidence Interval", lineStyle = list(type = "dotted", color = conf_color), smooth = FALSE, symbol = "none") |>
+    e_title("Partial Autocorrelation Function", subtext = sprintf("%s - Squared Returns", ticker)) |>
+    e_tooltip(trigger = "axis") |>
+    e_x_axis(name = "Lag", nameLocation = "middle", nameGap = 28, min = 0, max = lag) |>
+    e_grid(bottom = "15%") |>
+    e_legend(FALSE)
+
+
 
   return(list(
     acf = acf_plot,
@@ -219,14 +248,4 @@ make_cf_plot <- function(returns, sq_returns, lag = NULL, ticker){
     pacf_sq = pacf_sq_plot
   ))
 
-}
-
-#' @export
-#' compute default lag
-get_lag <- function(returns){
-  N <- length(returns)
-  m <- 1
-  lag <- floor(10 * log10(N / m))
-  lag <- min(lag, N - 1)
-  return(lag)
 }

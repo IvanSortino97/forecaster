@@ -38,10 +38,14 @@ ui <- function(id) {
 
     card_title("ACF and PACF"),
     card(
-      card_body(
+      card_body(class = "pb-0",
         navset_underline(
-          nav_panel("Returns", echarts4rOutput(ns("cf_returns_plot"))),
-          nav_panel("Sq. returns", echarts4rOutput(ns("cf_sqReturns_plot")))
+          nav_panel("ACF", div(style="padding-top: 18px",
+                               div(class = "resize_chart",
+                               echarts4rOutput(ns("acf_plot"))))),
+          nav_panel("PACF", div(style="padding-top: 18px",
+                                div(class = "resize_chart",
+                                echarts4rOutput(ns("pacf_plot")))))
         )
       ),
       card_footer(class = "pb-0",
@@ -139,12 +143,12 @@ server <- function(id, stockInfo) {
     })
 
     # ACF/PACF
-    output$cf_returns_plot <- renderEcharts4r({
+    output$acf_plot <- renderEcharts4r({
       req(plots_cf())
 
       if(input$cfRadio == "ret") plots_cf()$acf else plots_cf()$acf_sq
     })
-    output$cf_sqReturns_plot <- renderEcharts4r({
+    output$pacf_plot <- renderEcharts4r({
       req(plots_cf())
       if(input$cfRadio == "ret") plots_cf()$pacf else plots_cf()$pacf_sq
     })

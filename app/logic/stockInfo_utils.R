@@ -14,7 +14,8 @@ box::use(
   reactable[reactable, reactableTheme,colDef],
   utils[tail],
 )
-box::use(app / logic / general_utils[tryCatch_toaster])
+box::use(app / logic / general_utils[tryCatch_toaster],
+         app / styles / colors[custom_blue])
 
 #' @export
 get_symbols <- function(){
@@ -419,7 +420,7 @@ ui_title_plot_card <- function(titleId,radiobuttonsId, plotId, tickerId){
         class = "custom-radio-group"
       ),
     card_body(
-      class = "padding_bottom0",
+      class = "resize_chart",
       #max_height = 200,
       fill = TRUE,
           echarts4rOutput(plotId)
@@ -472,14 +473,14 @@ make_volume_plot <- function(data, days){
     e_line(
       Volume,
       smooth = TRUE,
-      lineStyle = list(color = "#5756ff", width = 0.3),
+      lineStyle = list(color = custom_blue, width = 0.3),
       legend = FALSE
     ) |>
     e_area(
       Volume,
       smooth = TRUE,
       itemStyle = list(opacity = 0.1),
-      color = "#5756ff"
+      color = custom_blue
     ) |>
     e_tooltip(trigger = "axis") |>
     e_x_axis(show = FALSE) |>

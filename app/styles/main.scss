@@ -36,23 +36,29 @@
  color: #7f8189;
 }
 
-.padding_bottom0 {
+.resize_chart {
   padding-bottom: 0;
 }
 
 @media (max-width: 767px) {
-  .padding_bottom0 {
+  .resize_chart {
     max-height: 200px !important;
   }
 
   #app-stockInfo-stockPlot {
   height: 200px !important;
   }
+  #app-stockAnalysis-acf_plot {
+  height: 200px !important;
+  }
+  #app-stockAnalysis-pacf_plot {
+  height: 200px !important;
+  }
 
 }
 
 @media (min-width: 768px) {
-  .padding_bottom0 {
+  .resize_chart {
     max-height: 400px !important;
   }
 
