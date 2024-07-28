@@ -84,5 +84,19 @@
   color: #7f8189;
 }
 
+.flex-container {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+.flex-container .shiny-options-group {
+  display: flex;
+  align-items: center;
+}
 
+#app-stockAnalysis-cfRadio .shiny-options-group {
+  display: flex !important;
+  align-items: flex-end !important;
+  padding-top: 13px;
+}
 

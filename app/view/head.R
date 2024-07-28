@@ -5,6 +5,7 @@ box::use(shiny[tags, HTML, ],)
 #' @export
 html <- tags$head(
 
+
   # sidebar style (moved to main.scss) + script
   tags$script(
     HTML(
