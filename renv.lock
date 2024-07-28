@@ -16,6 +16,18 @@
       "Repository": "RSPM",
       "Hash": "a8235afbcd6316e6e91433ea47661013"
     },
+    "FinTS": {
+      "Package": "FinTS",
+      "Version": "0.4-9",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "graphics",
+        "zoo"
+      ],
+      "Hash": "24cc8f079b4f12cf4699ac4c4d6b0979"
+    },
     "R.cache": {
       "Package": "R.cache",
       "Version": "0.16.0",
@@ -970,6 +982,16 @@
       ],
       "Hash": "1cba04a4e9414bdefc9dcaa99649a8dc"
     },
+    "quadprog": {
+      "Package": "quadprog",
+      "Version": "1.5-8",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "5f919ae5e7f83a6f91dcf2288943370d"
+    },
     "quantmod": {
       "Package": "quantmod",
       "Version": "0.4.26",
@@ -1526,6 +1548,23 @@
         "xfun"
       ],
       "Hash": "5ac22900ae0f386e54f1c307eca7d843"
+    },
+    "tseries": {
+      "Package": "tseries",
+      "Version": "0.10-55",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "graphics",
+        "jsonlite",
+        "quadprog",
+        "quantmod",
+        "stats",
+        "utils",
+        "zoo"
+      ],
+      "Hash": "8a3928cb53aca9921f0db707550dfa84"
     },
     "utf8": {
       "Package": "utf8",

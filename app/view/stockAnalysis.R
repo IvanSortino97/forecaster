@@ -9,15 +9,14 @@ box::use(
   shiny.router[is_page],
   htmltools[css],
   shinybrowser[get_device],
-
+  spsComps[addLoader],
 )
 box::use(
   app / logic / general_utils[title, subtitle ],
   app / logic / stockAnalysis_utils[get_returns,get_lag,
                                     make_analysis_plots, make_price_table, make_cf_plot,
-                                    make_box_table, make_jb_table,
-                                    test_header
-                                    ],
+                                    make_box_table, make_jb_table, make_adf_table, make_t_table, make_arch_table,
+                                    test_header],
 )
 
 #' @export
@@ -26,8 +25,12 @@ ui <- function(id) {
 
   page_fillable(
 
+    div( style = "display: flex; align-items: top;",
+        title("Stock Analysis"),
+        div(id = ns("stockAnalysisLoader"), style = "height: 23px; width: 23px; margin-left: 10px;")
+    ),
 
-    title("Stock Analysis"),
+
     subtitle("Perform analysis on returns, ACF, PACF e other things ... "),
     navset_card_underline(
       height = 400,
@@ -85,9 +88,7 @@ ui <- function(id) {
                        card(
                          test_header("Box Test",
                                      ns("boxSwitch")),
-                         card_body(
-                           reactableOutput(ns("boxTable"))
-                         ),
+                         card_body(reactableOutput(ns("boxTable"))),
                          card_footer(class = "pb-0",
                                      layout_column_wrap(
                                        width = NULL,
@@ -101,11 +102,26 @@ ui <- function(id) {
                          )
                        ),
                        card(
-                         test_header("Jarque-Bera Test",
-                                     ns("jbSwitch")),
-                         card_body(
-                           reactableOutput(ns("jbTable"))
-                         )
+                         test_header("Augmented Dickey-Fuller Test",
+                                     ns("adfSwitch")),
+                         card_body( reactableOutput(ns("adfTable"))),
+                         card_footer(class = "pb-0",
+                                     sliderInput(ns("adfSlider"),
+                                                 label = NULL, width = "100%",
+                                                 min = 1, max = 50, value = 10, ticks = F))
+                       ),
+                       card(
+                         test_header("Jarque-Bera Test",ns("jbSwitch")),
+                         card_body(reactableOutput(ns("jbTable")))
+                       ),
+
+                       card(
+                         test_header("T-Test", ns("tSwitch")),
+                         card_body(reactableOutput(ns("tTable")))
+                       ),
+                       card(
+                         test_header("ARCH Test", ns("archSwitch")),
+                         card_body(reactableOutput(ns("archTable")))
                        )
     )
   )
@@ -117,6 +133,13 @@ server <- function(id, stockInfo) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    spinner <- addLoader$new(
+      target_selector =  "stockAnalysisLoader",
+      type = "facebook", #ripple or dual-ring
+      height = "21.33px",
+      color = "#757575"
+    )
+
     once <- reactiveVal(T)
     r <- reactiveValues()
     stats = reactiveVal()
@@ -126,6 +149,8 @@ server <- function(id, stockInfo) {
 
     observe({
       req(stockInfo()$data_xts(), is_page("stockAnalysis") )
+
+      spinner$show()
 
       ret <- get_returns(stockInfo()$data_xts())
       r$returns <- ret$returns
@@ -152,6 +177,14 @@ server <- function(id, stockInfo) {
                                     type = input$boxRadio)
       test$jb_r <- make_jb_table(returns =  r$returns)
       test$jb_r2 <- make_jb_table(sq_returns =  r$squared_returns)
+      test$adf_r <- make_adf_table(returns =  r$returns, lag = input$adfSlider)
+      test$adf_r2 <- make_adf_table(sq_returns =  r$squared_returns, lag = input$adfSlider)
+      test$t_r <- make_t_table(returns =  r$returns)
+      test$t_r2 <- make_t_table(sq_returns =  r$squared_returns)
+      test$arch_r <- make_arch_table(returns =  r$returns)
+      test$arch_r2 <- make_arch_table(sq_returns =  r$squared_returns)
+
+      spinner$hide()
     })
 
     # first card
@@ -196,8 +229,23 @@ server <- function(id, stockInfo) {
     })
 
     output$jbTable <- renderReactable({
-      req(test$box_r2)
-      if (input$jbSwitch) test$jb_r else test$ jb_r2
+      req(test$jb_r)
+      if (input$jbSwitch) test$jb_r else test$jb_r2
+    })
+
+    output$adfTable <- renderReactable({
+      req(test$adf_r)
+      if (input$adfSwitch) test$adf_r else test$adf_r2
+    })
+
+    output$tTable <- renderReactable({
+      req(test$t_r)
+      if (input$tSwitch) test$t_r else test$t_r2
+    })
+
+    output$archTable <- renderReactable({
+      req(test$arch_r)
+      if (input$archSwitch) test$arch_r else test$arch_r2
     })
 
 

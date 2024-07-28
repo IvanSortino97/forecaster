@@ -1,2 +1,2 @@
 
-custom_blue = "#5756ff"
+custom_blue = "#007bc2"

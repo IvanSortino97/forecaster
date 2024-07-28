@@ -3,9 +3,10 @@ box::use(
   quantmod[dailyReturn, Cl],
   bslib[card_header],
   zoo[coredata, index],
-  stats[quantile, acf, pacf, Box.test],
+  stats[quantile, acf, pacf, Box.test, t.test],
   data.table[data.table],
-  tseries[jarque.bera.test],
+  tseries[jarque.bera.test, adf.test],
+  FinTS[ArchTest],
   shinyWidgets[switchInput],
   reactable[reactable, reactableTheme,colDef],
   echarts4r[e_bar, e_x_axis,e_datazoom,e_grid,e_legend,e_tooltip,e_title,e_line,e_charts,e_density]
@@ -352,6 +353,72 @@ make_jb_table <- function(returns = NULL, sq_returns = NULL){
   significance_level <- 0.05
   pass <- if(pvalue < significance_level) "Fail" else "Success"
   result <- if(pvalue < significance_level) "Data does not follow a normal distribution" else "Data follows a normal distribution"
+
+  dt <- make_test_dt(nullH, data,
+                     substr(pvalue, 1, 10),
+                     significance_level, pass, result)
+
+  format_test_table(dt)
+
+}
+
+#' @export
+make_adf_table <- function(returns = NULL, sq_returns = NULL, lag){
+
+  series <- if(!is.null(returns)) "Returns" else HTML("Returns<sup>2</sup>")
+  data <- if(!is.null(returns)) returns else sq_returns
+
+  test <- suppressWarnings(adf.test(data, k=lag))
+  nullH <- "Non-stationary"
+  data <- series
+  pvalue = test$p.value
+  significance_level <- 0.05
+  pass <- if(pvalue < significance_level) "Fail" else "Success"
+  result <- if(pvalue < significance_level) "The time series is stationary" else "The time series is non-stationary"
+
+  dt <- make_test_dt(nullH, data,
+                     substr(pvalue, 1, 10),
+                     significance_level, pass, result)
+
+  format_test_table(dt)
+
+}
+
+#' @export
+make_t_table <- function(returns = NULL, sq_returns = NULL, lag){
+
+  series <- if(!is.null(returns)) "Returns" else HTML("Returns<sup>2</sup>")
+  data <- if(!is.null(returns)) returns else sq_returns
+
+  test <- suppressWarnings(t.test(data, k=lag))
+  nullH <- "Mean = 0"
+  data <- series
+  pvalue = test$p.value
+  significance_level <- 0.05
+  pass <- if(pvalue < significance_level) "Fail" else "Success"
+  result <- if(pvalue < significance_level) "The mean of the data is not zero" else "The mean of the data is zero"
+
+  dt <- make_test_dt(nullH, data,
+                     substr(pvalue, 1, 10),
+                     significance_level, pass, result)
+
+  format_test_table(dt)
+
+}
+
+#' @export
+make_arch_table <- function(returns = NULL, sq_returns = NULL){
+
+  series <- if(!is.null(returns)) "Returns" else HTML("Returns<sup>2</sup>")
+  data <- if(!is.null(returns)) returns else sq_returns
+
+  test <- suppressWarnings(ArchTest(data, k=lag))
+  nullH <- "No ARCH effects"
+  data <- series
+  pvalue = test$p.value
+  significance_level <- 0.05
+  pass <- if(pvalue < significance_level) "Fail" else "Success"
+  result <- if(pvalue < significance_level) "There are ARCH effects in the data" else "There are no ARCH effects in the data"
 
   dt <- make_test_dt(nullH, data,
                      substr(pvalue, 1, 10),
