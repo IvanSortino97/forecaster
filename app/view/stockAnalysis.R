@@ -15,7 +15,8 @@ box::use(
   app / logic / general_utils[title, subtitle ],
   app / logic / stockAnalysis_utils[get_returns,get_lag,
                                     make_analysis_plots, make_price_table, make_cf_plot,
-                                    make_box_table,
+                                    make_box_table, make_jb_table,
+                                    test_header
                                     ],
 )
 
@@ -82,9 +83,9 @@ ui <- function(id) {
     card_title("Statistical tests"),
     layout_column_wrap(width = 1 / 2,
                        card(
-                         card_header("Box Test"),
+                         test_header("Box Test",
+                                     ns("boxSwitch")),
                          card_body(
-                           subtitle("The Box test checks for autocorrelation in the data."),
                            reactableOutput(ns("boxTable"))
                          ),
                          card_footer(class = "pb-0",
@@ -98,6 +99,13 @@ ui <- function(id) {
                                        sliderInput(ns("boxSlider"), label = NULL,
                                                    min = 1, max = 150, value = 20, ticks = F))
                          )
+                       ),
+                       card(
+                         test_header("Jarque-Bera Test",
+                                     ns("jbSwitch")),
+                         card_body(
+                           reactableOutput(ns("jbTable"))
+                         )
                        )
     )
   )
@@ -109,11 +117,12 @@ server <- function(id, stockInfo) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    once <- reactiveVal(T)
     r <- reactiveValues()
     stats = reactiveVal()
     plots = reactiveVal()
     plots_cf = reactiveVal()
-    once <- reactiveVal(T)
+    test = reactiveValues()
 
     observe({
       req(stockInfo()$data_xts(), is_page("stockAnalysis") )
@@ -134,6 +143,15 @@ server <- function(id, stockInfo) {
       stats(make_price_table(stockInfo()$data_xts(), r$returns))
       plots_cf(make_cf_plot(r$returns,r$squared_returns,
                             input$cfSlider, stockInfo()$ticker()))
+
+      test$box_r <- make_box_table(returns = r$returns,
+                                   lag = input$boxSlider,
+                                   type = input$boxRadio)
+      test$box_r2 <- make_box_table(sq_returns = r$squared_returns,
+                                    lag = input$boxSlider,
+                                    type = input$boxRadio)
+      test$jb_r <- make_jb_table(returns =  r$returns)
+      test$jb_r2 <- make_jb_table(sq_returns =  r$squared_returns)
     })
 
     # first card
@@ -173,11 +191,13 @@ server <- function(id, stockInfo) {
 
     # Test
     output$boxTable <- renderReactable({
-      req(r$returns)
-      make_box_table(r$returns,
-                   input$boxSlider,
-                   input$boxRadio)
+      req(test$box_r)
+      if (input$boxSwitch) test$box_r else test$box_r2
+    })
 
+    output$jbTable <- renderReactable({
+      req(test$box_r2)
+      if (input$jbSwitch) test$jb_r else test$ jb_r2
     })
 
 

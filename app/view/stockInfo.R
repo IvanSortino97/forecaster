@@ -69,7 +69,7 @@ ui <- function(id) {
         value = textOutput(ns("volume")),
         showcase = echarts4rOutput(ns("volumePlot")),
         full_screen = TRUE,
-        p("Open to see more", class= "p_sub_small")
+        p("",id = ns("infoVolume"), class= "p_sub_small")
       ),
       value_box(
         title = "Average Volume",

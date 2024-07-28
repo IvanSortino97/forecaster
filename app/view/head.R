@@ -96,6 +96,29 @@ html <- tags$head(
       '
     )
   ),
+  # show Volume info
+  tags$script(
+    HTML(
+      '
+      document.addEventListener("DOMContentLoaded", function() {
+        function updateText() {
+          var element = document.querySelector("#app-stockInfo-infoVolume");
+          if (window.innerWidth <= 767) {
+            element.textContent = "";
+          } else {
+            element.textContent = "Open to see more";
+          }
+        }
+
+        // Call updateText on load
+        updateText();
+
+        // Update text on window resize
+        window.addEventListener("resize", updateText);
+      });
+      '
+    )
+  ),
 )
 
 

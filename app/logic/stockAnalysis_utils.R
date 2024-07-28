@@ -1,8 +1,12 @@
 box::use(
+  shiny[tags, HTML],
   quantmod[dailyReturn, Cl],
+  bslib[card_header],
   zoo[coredata, index],
   stats[quantile, acf, pacf, Box.test],
   data.table[data.table],
+  tseries[jarque.bera.test],
+  shinyWidgets[switchInput],
   reactable[reactable, reactableTheme,colDef],
   echarts4r[e_bar, e_x_axis,e_datazoom,e_grid,e_legend,e_tooltip,e_title,e_line,e_charts,e_density]
 )
@@ -250,45 +254,110 @@ make_cf_plot <- function(returns, sq_returns, lag = NULL, ticker) {
 
 }
 
+#' @export
+test_header <- function(title, switchId) {
+  card_header(
+    tags$div(class = "d-flex justify-content-between align-items-center",
+             tags$div(style = "padding-top: 5px;", title),
+             switchInput(
+               inputId = switchId,
+               labelWidth = "100%",
+               size = "mini",
+               inline = TRUE,
+               value = TRUE,
+               onLabel = "R",
+               offLabel = HTML("R<sup>2</sup>"),
+               onStatus = "default",
+               width = "auto"
+             )
+    )
+  )
+}
 
-make_test_dt <- function(nh, pv, sl, rs){
+
+
+make_test_dt <- function(nh, dt, pv, sl, ps, rs){
   data.table(
-    name = c("Null Hypotesis","p-value", "Significance level", "Result"),
-    value = c(nh, pv, sl, rs)
+    name = c("Null Hypotesis", "Data", "p-value", "Significance level","Pass", "Result"),
+    value = c(nh,dt, pv, sl, ps, rs)
   )
 }
 
-format_test_table <- function(dt){
+format_test_table <- function(dt) {
   reactable(dt,
-                  columns = list(value = colDef(
-                    style = list(
-                      textAlign = "right",
-                      fontWeight = "600",
-                      fontSize = "0.9rem",
-                      lineHeight = "1.375rem"
-                    )
-
-                  )),
-                  compact = TRUE,
-                  theme = reactableTheme(
-                    headerStyle = list(display = "none"),
-                    cellPadding = "4px 8px"
+            columns = list(
+              name = colDef(
+                #maxWidth = 80,
+                style = list(
+                  textAlign = "left",
+                  fontWeight = "600",
+                  fontSize = "0.7rem",
+                  lineHeight = "1.375rem"
+                )
+              ),
+              value = colDef(
+                html = TRUE,
+                style = function(value) {
+                  color <- if (value == "Success") "green" else if (value == "Fail") "red"
+                  list(
+                    textAlign = "right",
+                    fontSize = "0.7rem",
+                    color = color
                   )
+                }
+              )
+            ),
+            compact = TRUE,
+            theme = reactableTheme(
+              headerStyle = list(display = "none"),
+              cellPadding = "4px 8px"
+            )
   )
 }
+
 
 
 #' @export
-make_box_table <- function(returns, lag, type){
+make_box_table <- function(returns = NULL, sq_returns = NULL, lag, type){
 
-  test <- Box.test(returns, lag, type)
-  nullH <- "Data independently distributed (no autocorrelation)."
+  series <- if(!is.null(returns)) "Returns" else HTML("Returns<sup>2</sup>")
+  data <- if(!is.null(returns)) returns else sq_returns
+
+  test <- Box.test(data, lag, type)
+  data <- series
+  nullH <- "No autocorrelation"
   pvalue = test$p.value
   significance_level <- 0.05
-  result <- if(pvalue < significance_level) "Fail - Returns autocorrelated" else "Success - No autocorrelation"
+  pass <- if(pvalue < significance_level) "Fail" else "Success"
+  result <- if(pvalue < significance_level) "Daily returns are not independently distributed" else "Daily returns are independently distributed"
 
-  dt <- make_test_dt(nullH, pvalue, significance_level, result)
+  dt <- make_test_dt(nullH, data,
+                     substr(pvalue, 1, 10),
+                     significance_level, pass, result)
 
   format_test_table(dt)
 
 }
+
+#' @export
+make_jb_table <- function(returns = NULL, sq_returns = NULL){
+
+  series <- if(!is.null(returns)) "Returns" else HTML("Returns<sup>2</sup>")
+  data <- if(!is.null(returns)) returns else sq_returns
+
+  test <- jarque.bera.test(data)
+  nullH <- "Normal distribution"
+  data <- series
+  pvalue = test$p.value
+  significance_level <- 0.05
+  pass <- if(pvalue < significance_level) "Fail" else "Success"
+  result <- if(pvalue < significance_level) "Data does not follow a normal distribution" else "Data follows a normal distribution"
+
+  dt <- make_test_dt(nullH, data,
+                     substr(pvalue, 1, 10),
+                     significance_level, pass, result)
+
+  format_test_table(dt)
+
+}
+
