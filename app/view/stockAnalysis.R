@@ -8,7 +8,6 @@ box::use(
   reactable[renderReactable, reactableOutput],
   shiny.router[is_page],
   htmltools[css],
-  stats[acf, pacf],
   shinybrowser[get_device],
 
 )
@@ -16,6 +15,7 @@ box::use(
   app / logic / general_utils[title, subtitle ],
   app / logic / stockAnalysis_utils[get_returns,get_lag,
                                     make_analysis_plots, make_price_table, make_cf_plot,
+                                    make_box_table,
                                     ],
 )
 
@@ -49,7 +49,6 @@ ui <- function(id) {
         )
       ),
       card_footer(class = "pb-0",
-
         layout_column_wrap(
           width = NULL,
           style = css(grid_template_columns = "1fr 2fr"),
@@ -58,12 +57,8 @@ ui <- function(id) {
                                choices = c("Returns" = "ret",
                                            "Sq. returns" = "sqRet"))),
                   sliderInput(ns("cfSlider"), label = NULL,
-                              min = 0, max = 150, value = 20, ticks = F)
-
-          )
-
-
-      )
+                              min = 1, max = 150, value = 20, ticks = F))
+        )
     ),
     card(
       card_header(class = "pb-0",
@@ -83,15 +78,28 @@ ui <- function(id) {
         )
       )
     ),
+
     card_title("Statistical tests"),
-    card(navset_pill_list(
-      well = F,
-
-      nav_panel(title = "One", p("First tab content.")),
-      nav_panel(title = "Two", p("Second tab content.")),
-      nav_panel(title = "Three", p("Third tab content"))
-
-    ))
+    layout_column_wrap(width = 1 / 2,
+                       card(
+                         card_header("Box Test"),
+                         card_body(
+                           subtitle("The Box test checks for autocorrelation in the data."),
+                           reactableOutput(ns("boxTable"))
+                         ),
+                         card_footer(class = "pb-0",
+                                     layout_column_wrap(
+                                       width = NULL,
+                                       style = css(grid_template_columns = "1fr 2fr"),
+                                       div(class = "flex-container",
+                                           radioButtons(ns("boxRadio"), label = NULL, inline = T,
+                                                        choices = c("Ljung-Box" = "Ljung-Box",
+                                                                    "Box-Pierce" = "Box-Pierce"))),
+                                       sliderInput(ns("boxSlider"), label = NULL,
+                                                   min = 1, max = 150, value = 20, ticks = F))
+                         )
+                       )
+    )
   )
 }
 
@@ -153,6 +161,7 @@ server <- function(id, stockInfo) {
       if(input$cfRadio == "ret") plots_cf()$pacf else plots_cf()$pacf_sq
     })
 
+    # Summary
     output$summaryPrice <- renderReactable({
       req(stats())
       stats()$table_prices
@@ -160,6 +169,15 @@ server <- function(id, stockInfo) {
     output$summaryReturns <- renderReactable({
       req(stats())
       stats()$table_returns
+    })
+
+    # Test
+    output$boxTable <- renderReactable({
+      req(r$returns)
+      make_box_table(r$returns,
+                   input$boxSlider,
+                   input$boxRadio)
+
     })
 
 

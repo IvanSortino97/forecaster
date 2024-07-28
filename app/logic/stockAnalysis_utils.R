@@ -1,7 +1,7 @@
 box::use(
   quantmod[dailyReturn, Cl],
   zoo[coredata, index],
-  stats[quantile, acf, pacf],
+  stats[quantile, acf, pacf, Box.test],
   data.table[data.table],
   reactable[reactable, reactableTheme,colDef],
   echarts4r[e_bar, e_x_axis,e_datazoom,e_grid,e_legend,e_tooltip,e_title,e_line,e_charts,e_density]
@@ -247,5 +247,48 @@ make_cf_plot <- function(returns, sq_returns, lag = NULL, ticker) {
     acf_sq = acf_sq_plot,
     pacf_sq = pacf_sq_plot
   ))
+
+}
+
+
+make_test_dt <- function(nh, pv, sl, rs){
+  data.table(
+    name = c("Null Hypotesis","p-value", "Significance level", "Result"),
+    value = c(nh, pv, sl, rs)
+  )
+}
+
+format_test_table <- function(dt){
+  reactable(dt,
+                  columns = list(value = colDef(
+                    style = list(
+                      textAlign = "right",
+                      fontWeight = "600",
+                      fontSize = "0.9rem",
+                      lineHeight = "1.375rem"
+                    )
+
+                  )),
+                  compact = TRUE,
+                  theme = reactableTheme(
+                    headerStyle = list(display = "none"),
+                    cellPadding = "4px 8px"
+                  )
+  )
+}
+
+
+#' @export
+make_box_table <- function(returns, lag, type){
+
+  test <- Box.test(returns, lag, type)
+  nullH <- "Data independently distributed (no autocorrelation)."
+  pvalue = test$p.value
+  significance_level <- 0.05
+  result <- if(pvalue < significance_level) "Fail - Returns autocorrelated" else "Success - No autocorrelation"
+
+  dt <- make_test_dt(nullH, pvalue, significance_level, result)
+
+  format_test_table(dt)
 
 }
