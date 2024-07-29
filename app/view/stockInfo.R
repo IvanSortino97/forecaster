@@ -49,6 +49,11 @@ ui <- function(id) {
         )
       )
     ),
+
+    conditionalPanel(
+      condition = "input.tableSwitch === false",
+      ns = ns,
+
     ui_title_plot_card(titleId = ns("stockTitle"),
                         radiobuttonsId = ns("yearSlicer"),
                         plotId = ns("stockPlot"),
@@ -120,6 +125,8 @@ ui <- function(id) {
     ),
     page_footer(hrefPageNext = route_link("stockAnalysis"),
                 textPageNext = "Stock Analysis")
+
+    )
   )
 }
 

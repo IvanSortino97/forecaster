@@ -34,15 +34,28 @@ onEnd <- function(){
 
 #' @export
 header <- function(title, idtextOutput) {
-  tags$div(style = "padding: 10px 10px 10px 10px;border-bottom: 1px solid #e9ecef; display: flex; justify-content: left; align-items: center;",
-           logo,
-           tags$a(href = route_link("/"),
-                  class = "custom-link",
-                  tags$h4(title, style = "display: inline; margin-left: 15px;")),
-           tags$div(style = "flex-grow: 1;"),
-           tags$p(tags$div(textOutput(idtextOutput),style = "margin-right: 10px;"), style = "display: contents; ")
+  tags$div(
+    style = "padding: 10px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: left; align-items: center;",
+    logo,
+    tags$a(
+      href = route_link("/"),
+      class = "custom-link",
+      tags$h4(title, style = "display: inline; margin-left: 15px; color: #464646;")
+    ),
+    tags$div(style = "flex-grow: 1;"),
+    tags$a(
+      class = "custom-link",
+      href = route_link("stockInfo"),
+      style = "display: flex; align-items: center; overflow-x: hidden;",  # Added overflow-x: hidden
+      tags$p(
+        tags$div(textOutput(idtextOutput), style = "margin-right: 10px; white-space: nowrap;"),  # Prevent line break
+        style = "margin: 0; color: #464646;"
+      )
+    )
   )
 }
+
+
 
 #' @export
 title <- function(text, id = ""){

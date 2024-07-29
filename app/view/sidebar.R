@@ -45,7 +45,7 @@ sidebar_component <- function(idSd) {
 
       # Test buttons
       accordion_panel(
-        "Section 2"
+        "GARCH Model"
       )
     )
   )
