@@ -10,15 +10,29 @@
   font-size: 18px;
   color: black;
   display: block;
+  transition: background-color 0.3s ease; /* Smooth transition for background color change */
 }
+
 .custom-accordion-section:hover {
   background-color: grey;
   color: white;
 }
+
+/* Active state */
 .custom-accordion-section.active {
-  background-color: blue;
-  color: white;
+  background-color: #f0f0f0;
+  font-weight: bold;
+  border-left: 4px solid #007bc2;
+  cursor: default; /* Change cursor to default when active */
 }
+
+/* Disable hover effects when active */
+.custom-accordion-section.active:hover {
+  background-color: #f0f0f0; /* Ensure background color remains the same */
+  color: black; /* Ensure text color remains the same */
+}
+
+
 
 .custom-radio-group .btn {
   padding: 2px 5px;  /* Adjust padding to make the buttons smaller */
