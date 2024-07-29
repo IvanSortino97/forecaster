@@ -7,9 +7,10 @@ box::use(shiny[ div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons,
          zoo[coredata, index],
          data.table[data.table, setorder],
          spsComps[addLoader],
+         shiny.router[route_link],
          reactable[reactableOutput, renderReactable, getReactableState],
 )
-box::use(app / logic / general_utils[title, subtitle, tryCatch_toaster])
+box::use(app / logic / general_utils[title, subtitle, tryCatch_toaster, page_footer])
 box::use(app / logic / stockInfo_utils[get_symbols, get_sp500, get_data,get_variation,
                                        make_list, make_stock_table, make_stock_plot, make_volume_plot,
                                        years_ago, months_ago, scrape_yahoo_finance, make_stat_table,
@@ -116,7 +117,9 @@ ui <- function(id) {
       p("Balance Sheet and Cash Flow", class = "card-header", style = "border-bottom: none; padding-left: 0;"),
       reactableOutput(ns("balancesheetTable"))
       )
-    )
+    ),
+    page_footer(hrefPageNext = route_link("stockAnalysis"),
+                textPageNext = "Stock Analysis")
   )
 }
 

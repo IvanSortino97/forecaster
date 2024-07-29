@@ -1,4 +1,4 @@
-box::use(shiny[img, tags, HTML, shinyOptions, getShinyOption, onSessionEnded, textOutput, withProgress],
+box::use(shiny[ img, tags, HTML, shinyOptions, getShinyOption, onSessionEnded, textOutput, withProgress],
          shiny.router[route_link],
          shinytoastr[toastr_error, toastr_warning],
          bslib[card],
@@ -83,4 +83,28 @@ tryCatch_toaster <- function(expr, timeoutToaster = 3000) {
       )
       return(NULL)
   })
+}
+
+#' @export
+page_footer <- function(hrefPagePrecedent = NULL, hrefPageNext = NULL, textPagePrecedent = "Previous Page", textPageNext = "Next Page") {
+  shiny::div(
+    shiny::tags$hr(class = "m-0 mb-2"), # Horizontal line
+    if (!is.null(hrefPagePrecedent)) {
+      shiny::tags$a(
+        href = hrefPagePrecedent,
+        class = "btn btn-light btn-sm",
+        style = "float: left; border: 1px solid #ccc; padding: 5px 10px; margin: 5px;",
+        textPagePrecedent
+      )
+    },
+    if (!is.null(hrefPageNext)) {
+      shiny::tags$a(
+        href = hrefPageNext,
+        class = "btn btn-light btn-sm",
+        style = "float: right; border: 1px solid #ccc; padding: 5px 10px; margin: 5px;",
+        textPageNext
+      )
+    },
+    style = "overflow: hidden;" # Border styling for div
+  )
 }

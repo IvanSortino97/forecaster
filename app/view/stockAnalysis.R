@@ -6,13 +6,13 @@ box::use(
   data.table[data.table],
   echarts4r[renderEcharts4r, echarts4rOutput, ],
   reactable[renderReactable, reactableOutput],
-  shiny.router[is_page],
+  shiny.router[is_page, route_link],
   htmltools[css],
   shinybrowser[get_device],
   spsComps[addLoader],
 )
 box::use(
-  app / logic / general_utils[title, subtitle ],
+  app / logic / general_utils[title, subtitle, page_footer ],
   app / logic / stockAnalysis_utils[get_returns,get_lag,
                                     make_analysis_plots, make_price_table, make_cf_plot,
                                     make_box_table, make_jb_table, make_adf_table, make_t_table, make_arch_table,
@@ -122,7 +122,11 @@ ui <- function(id) {
                          test_header("ARCH Test", ns("archSwitch")),
                          card_body(reactableOutput(ns("archTable")))
                        )
-    )
+    ),
+    page_footer(hrefPageNext = route_link("garchFit"),
+                textPageNext = "Fitting Model",
+                hrefPagePrecedent = route_link("stockInfo"),
+                textPagePrecedent = "Stock Selection")
   )
 }
 
