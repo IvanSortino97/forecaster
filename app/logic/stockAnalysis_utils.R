@@ -412,7 +412,7 @@ make_arch_table <- function(returns = NULL, sq_returns = NULL){
   series <- if(!is.null(returns)) "Returns" else HTML("Returns<sup>2</sup>")
   data <- if(!is.null(returns)) returns else sq_returns
 
-  test <- suppressWarnings(ArchTest(data, k=lag))
+  test <- suppressWarnings(ArchTest(data))
   nullH <- "No ARCH effects"
   data <- series
   pvalue = test$p.value

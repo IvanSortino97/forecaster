@@ -21,7 +21,8 @@ ui <- function(id) {
 
   page_fillable(
 
-    title("Stock Selection"),
+    title("Stock Selection",
+          ns("loadingDiv")),
     subtitle("Selection and analysis dashboard for NASDAQ Stocks with interactive data visualization and financial metrics"),
 
     selectizeInput(
@@ -35,7 +36,8 @@ ui <- function(id) {
     ),
     ui_switch_inputs(ns("tableSwitch"),
                      ns("sp500Switch"),
-                     ns("loadingDiv")),
+                     ns("") #loading div
+                     ),
     conditionalPanel(
       condition = "input.tableSwitch === true",
       ns = ns,

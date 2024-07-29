@@ -25,10 +25,9 @@ ui <- function(id) {
 
   page_fillable(
 
-    div( style = "display: flex; align-items: top;",
-        title("Stock Analysis"),
-        div(id = ns("stockAnalysisLoader"), style = "height: 23px; width: 23px; margin-left: 10px;")
-    ),
+
+        title("Stock Analysis",
+              id = ns("stockAnalysisLoader")),
 
 
     subtitle("Perform analysis on returns, ACF, PACF e other things ... "),

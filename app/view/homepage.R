@@ -22,7 +22,9 @@ tagList(
 div("TODO: Homepage"),
 hr(),
 lapply(page_links, function(link) {
-  tags$a(href = route_link(link$page), link$title, tags$br())
+  tags$a(href = route_link(link$page),
+         class = "custom-accordion-section",
+         link$title, tags$br())
 })
 )
 
