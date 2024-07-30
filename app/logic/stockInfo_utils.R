@@ -4,7 +4,7 @@ box::use(
   echarts4r[e_dims, e_y_axis, e_x_axis,e_show_loading,e_toolbox,e_grid,e_datazoom,e_area, e_candle, echarts4rOutput, e_legend, e_title, e_tooltip, e_line, e_charts],
   TTR[stockSymbols],
   dplyr[filter, select],
-  quantmod[getSymbols],
+  quantmod[getSymbols, Cl, dailyReturn],
   data.table[data.table],
   #spsComps[addLoader],
   shiny[getShinyOption, shinyOptions, tags,div, HTML, textOutput, uiOutput],
@@ -113,6 +113,11 @@ get_sp500 <- function(){
   }
 
   return(symbols)
+}
+
+#' @export
+get_dailyReturns <- function(data_xts){
+  dailyReturn(Cl(data_xts))
 }
 
 #' @export

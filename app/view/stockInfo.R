@@ -11,7 +11,7 @@ box::use(shiny[ div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons,
          reactable[reactableOutput, renderReactable, getReactableState],
 )
 box::use(app / logic / general_utils[title, subtitle, tryCatch_toaster, page_footer])
-box::use(app / logic / stockInfo_utils[get_symbols, get_sp500, get_data,get_variation,
+box::use(app / logic / stockInfo_utils[get_symbols, get_sp500, get_data,get_variation, get_dailyReturns,
                                        make_list, make_stock_table, make_stock_plot, make_volume_plot,
                                        years_ago, months_ago, scrape_yahoo_finance, make_stat_table,
                                        ui_switch_inputs, ui_title_plot_card, ui_source_link])
@@ -157,6 +157,7 @@ server <- function(id, ...) {
     data <- reactiveVal(NULL)
     data_xts <- reactiveVal(NULL)
     scraped_info <- reactiveVal(NULL)
+    returns <- reactiveVal(NULL)
 
     observe(
       updateSelectizeInput(
@@ -194,6 +195,7 @@ server <- function(id, ...) {
                              from = years_ago(10))
 
       data_xts(stock_data)
+      returns(get_dailyReturns(stock_data))
       scraped_info(scrape_yahoo_finance(selectedTicker()))
 
       stock_data <- data.table(date = as.character(index(stock_data)),
@@ -301,7 +303,8 @@ server <- function(id, ...) {
         ticker = reactive(selectedTicker()),
         name = reactive(selectedStockInfo()$Name),
         data = reactive(data()),
-        data_xts = reactive(data_xts())
+        data_xts = reactive(data_xts()),
+        returns = reactive(returns())
       )
     )
 
