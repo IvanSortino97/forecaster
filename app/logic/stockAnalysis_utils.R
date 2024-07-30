@@ -8,11 +8,31 @@ box::use(
   tseries[jarque.bera.test, adf.test],
   FinTS[ArchTest],
   shinyWidgets[switchInput],
+  shiny.router[route_link],
   reactable[reactable, reactableTheme,colDef],
   echarts4r[e_bar, e_x_axis,e_datazoom,e_grid,e_legend,e_tooltip,e_title,e_line,e_charts,e_density]
 )
 
 box::use(app / styles / colors[custom_blue])
+
+#' @export
+no_stock_message <- function() {
+
+  tags$div(style = "padding-top: 20px;",
+    tags$div(
+    class = "alert alert-warning mt-3 text-center",
+    tags$h6(class = "alert-heading",
+            "Please select a stock before proceeding."),
+    tags$a(
+      'Go to "Stock Selection"',
+      href = route_link("stockInfo"),
+      class = "btn btn-light btn-sm mt-2",
+      style = "border: 1px solid #ccc;"
+    )
+  ))
+}
+
+
 
 #' @export
 get_returns <- function(data_xts){
@@ -299,7 +319,7 @@ format_test_table <- function(dt) {
               value = colDef(
                 html = TRUE,
                 style = function(value) {
-                  color <- if (value == "Success") "green" else if (value == "Fail") "red"
+                  color <- if (value == "Accept") "green" else if (value == "Reject") "red"
                   list(
                     textAlign = "right",
                     fontSize = "0.7rem",
@@ -329,7 +349,7 @@ make_box_table <- function(returns = NULL, sq_returns = NULL, lag, type){
   nullH <- "No autocorrelation"
   pvalue = test$p.value
   significance_level <- 0.05
-  pass <- if(pvalue < significance_level) "Fail" else "Success"
+  pass <- if(pvalue < significance_level) "Reject" else "Accept"
   result <- if(pvalue < significance_level) "Daily returns are not independently distributed" else "Daily returns are independently distributed"
 
   dt <- make_test_dt(nullH, data,
@@ -351,7 +371,7 @@ make_jb_table <- function(returns = NULL, sq_returns = NULL){
   data <- series
   pvalue = test$p.value
   significance_level <- 0.05
-  pass <- if(pvalue < significance_level) "Fail" else "Success"
+  pass <- if(pvalue < significance_level) "Reject" else "Accept"
   result <- if(pvalue < significance_level) "Data does not follow a normal distribution" else "Data follows a normal distribution"
 
   dt <- make_test_dt(nullH, data,
@@ -373,7 +393,7 @@ make_adf_table <- function(returns = NULL, sq_returns = NULL, lag){
   data <- series
   pvalue = test$p.value
   significance_level <- 0.05
-  pass <- if(pvalue < significance_level) "Fail" else "Success"
+  pass <- if(pvalue < significance_level) "Reject" else "Accept"
   result <- if(pvalue < significance_level) "The time series is stationary" else "The time series is non-stationary"
 
   dt <- make_test_dt(nullH, data,
@@ -395,7 +415,7 @@ make_t_table <- function(returns = NULL, sq_returns = NULL, lag){
   data <- series
   pvalue = test$p.value
   significance_level <- 0.05
-  pass <- if(pvalue < significance_level) "Fail" else "Success"
+  pass <- if(pvalue < significance_level) "Reject" else "Accept"
   result <- if(pvalue < significance_level) "The mean of the data is not zero" else "The mean of the data is zero"
 
   dt <- make_test_dt(nullH, data,
@@ -417,7 +437,7 @@ make_arch_table <- function(returns = NULL, sq_returns = NULL){
   data <- series
   pvalue = test$p.value
   significance_level <- 0.05
-  pass <- if(pvalue < significance_level) "Fail" else "Success"
+  pass <- if(pvalue < significance_level) "Reject" else "Accept"
   result <- if(pvalue < significance_level) "There are ARCH effects in the data" else "There are no ARCH effects in the data"
 
   dt <- make_test_dt(nullH, data,

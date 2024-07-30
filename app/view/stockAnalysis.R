@@ -7,6 +7,7 @@ box::use(
   echarts4r[renderEcharts4r, echarts4rOutput, ],
   reactable[renderReactable, reactableOutput],
   shiny.router[is_page, route_link],
+  shinyjs[hide, show],
   htmltools[css],
   shinybrowser[get_device],
   spsComps[addLoader],
@@ -16,7 +17,7 @@ box::use(
   app / logic / stockAnalysis_utils[get_returns,get_lag,
                                     make_analysis_plots, make_price_table, make_cf_plot,
                                     make_box_table, make_jb_table, make_adf_table, make_t_table, make_arch_table,
-                                    test_header],
+                                    test_header, no_stock_message],
 )
 
 #' @export
@@ -31,6 +32,11 @@ ui <- function(id) {
 
 
     subtitle("Perform analysis on returns, ACF, PACF e other things ... "),
+
+      # conditional panel,
+    div(id = ns("conditionalMessage"), no_stock_message()),
+    div(id = ns("conditionalPanel"),
+
     navset_card_underline(
       height = 400,
       full_screen = TRUE,
@@ -127,6 +133,7 @@ ui <- function(id) {
                 textPageNext = "Fitting Model",
                 hrefPagePrecedent = route_link("stockInfo"),
                 textPagePrecedent = "Stock Selection")
+    )
   )
 }
 
@@ -149,6 +156,17 @@ server <- function(id, stockInfo) {
     plots = reactiveVal()
     plots_cf = reactiveVal()
     test = reactiveValues()
+
+    hide("conditionalPanel")
+    observeEvent(stockInfo()$data_xts() , {
+      if (!is.null(stockInfo()$data_xts())) {
+        show("conditionalPanel")
+        hide("conditionalMessage")
+      } else {
+        hide("conditionalPanel")
+        show("conditionalMessage")
+      }
+    })
 
     observe({
       req(stockInfo()$data_xts(), is_page("stockAnalysis") )

@@ -1,6 +1,7 @@
 box::use(shiny[observe, reactive, reactiveVal, moduleServer, NS, tags, renderText, req],
          bslib[..., page_sidebar, page_fillable],
          shinybrowser[get_device, detect],
+         shinyjs[useShinyjs],
          shinytoastr[toastr_warning, useToastr],
          shiny.router[get_page, router_ui, route, router_server])
 
@@ -17,6 +18,7 @@ ui <- function(id) {
                useToastr(),
                detect(), # shinybrowser
                head$html, # head script and style
+               useShinyjs(),
 
     title = header("Forcaster", idtextOutput = ns("stockTicker")),
 
@@ -25,7 +27,9 @@ ui <- function(id) {
     page_fillable(router_ui(
       route("/", homepage$ui(ns("homepage"))),
       route("stockInfo", stockInfo$ui(ns("stockInfo"))),
-      route("stockAnalysis", stockAnalysis$ui(ns("stockAnalysis"))  )
+      route("stockAnalysis", stockAnalysis$ui(ns("stockAnalysis"))),
+
+      route("garchFit", garchFit$ui(ns("garchFit")))
     ))
   )
 
@@ -43,6 +47,8 @@ server <- function(id) {
     homepage$server("homepage")
     op_stockInfo <- stockInfo$server("stockInfo")
     stockAnalysis$server("stockAnalysis", reactive(op_stockInfo))
+
+    garchFit$server("garchFit", reactive(op_stockInfo))
 
 
     # -------------------------------------------------------------------------

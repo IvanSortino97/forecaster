@@ -1,8 +1,8 @@
 # app/view/
 
 box::use(
-  shiny[div, moduleServer, NS],
-  bslib[page_fillable]
+  shiny[div, moduleServer, NS, tags],
+  bslib[page_fillable, , card, card_header, card_body, card_title]
 )
 box::use(
   app / logic / general_utils[title, subtitle, ...],

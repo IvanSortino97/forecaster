@@ -28,6 +28,7 @@ sidebar_component <- function(idSd) {
 
     # Stock info
     accordion(
+      open = TRUE,
       accordion_panel(
         "Stock info",
         icon = bs_icon("graph-up"),
@@ -45,8 +46,14 @@ sidebar_component <- function(idSd) {
 
       # Test buttons
       accordion_panel(
-        "GARCH Model"
-      )
+        "GARCH Model",
+        icon = bs_icon("apple"),
+       accordion_section(
+          title = "Fit Models",
+          page = "garchFit",
+          icon = "list-check"
+        )
+      ),
     )
   )
 }
