@@ -16,34 +16,13 @@ box::use(
 box::use(app / styles / colors[custom_blue])
 
 #' @export
-no_stock_message <- function() {
+get_returns <- function(returns){
 
-  tags$div(style = "padding-top: 20px;",
-    tags$div(
-    class = "alert alert-warning mt-3 text-center",
-    tags$h6(class = "alert-heading",
-            "Please select a stock before proceeding."),
-    tags$a(
-      'Go to "Stock Selection"',
-      href = route_link("stockInfo"),
-      class = "btn btn-light btn-sm mt-2",
-      style = "border: 1px solid #ccc;"
-    )
-  ))
-}
-
-
-
-#' @export
-get_returns <- function(data_xts){
-
-  returns <- dailyReturn(Cl(data_xts))
   returns_dt <- data.table(date = index(returns), coredata(returns))
   squared_returns <- returns^2
   names(squared_returns) <- "squared.returns"
   squared_returns_dt <- data.table(date = index(squared_returns), coredata(squared_returns))
   return(list(
-    returns = returns,
     returns_dt = returns_dt,
     squared_returns = squared_returns,
     squared_returns_dt = squared_returns_dt
@@ -122,11 +101,18 @@ compute_stats <- function(ts, type){
   )
 
   dt <- reactable(dt,
-    columns = list(value = colDef(
+    columns = list(
+      name = colDef(
+        style = list(
+          textAlign = "left",
+          fontSize = "0.8rem"
+        )
+      ),
+      value = colDef(
       style = list(
         textAlign = "right",
         fontWeight = "600",
-        fontSize = "0.9rem",
+        fontSize = "0.8rem",
         lineHeight = "1.375rem"
       )
 
@@ -297,10 +283,10 @@ test_header <- function(title, switchId) {
 
 
 
-make_test_dt <- function(nh, dt, pv, sl, ps, rs){
+make_test_dt <- function(nh, dt, st, pv, sl, ps, rs){
   data.table(
-    name = c("Null Hypotesis", "Data", "p-value", "Significance level","Pass", "Result"),
-    value = c(nh,dt, pv, sl, ps, rs)
+    name = c("Null Hypotesis", "Data","Statistic", "p-value", "Significance level","Pass", "Result"),
+    value = c(nh,dt,st, pv, sl, ps, rs)
   )
 }
 
@@ -347,12 +333,13 @@ make_box_table <- function(returns = NULL, sq_returns = NULL, lag, type){
   test <- Box.test(data, lag, type)
   data <- series
   nullH <- "No autocorrelation"
+  stat <- test$statistic
   pvalue = test$p.value
   significance_level <- 0.05
   pass <- if(pvalue < significance_level) "Reject" else "Accept"
   result <- if(pvalue < significance_level) "Daily returns are not independently distributed" else "Daily returns are independently distributed"
 
-  dt <- make_test_dt(nullH, data,
+  dt <- make_test_dt(nullH, data, stat,
                      substr(pvalue, 1, 10),
                      significance_level, pass, result)
 
@@ -368,6 +355,7 @@ make_jb_table <- function(returns = NULL, sq_returns = NULL){
 
   test <- jarque.bera.test(data)
   nullH <- "Normal distribution"
+  stat <- test$statistic
   data <- series
   pvalue = test$p.value
   significance_level <- 0.05
@@ -375,6 +363,7 @@ make_jb_table <- function(returns = NULL, sq_returns = NULL){
   result <- if(pvalue < significance_level) "Data does not follow a normal distribution" else "Data follows a normal distribution"
 
   dt <- make_test_dt(nullH, data,
+                     substr(stat, 1, 10),
                      substr(pvalue, 1, 10),
                      significance_level, pass, result)
 
@@ -390,6 +379,7 @@ make_adf_table <- function(returns = NULL, sq_returns = NULL, lag){
 
   test <- suppressWarnings(adf.test(data, k=lag))
   nullH <- "Non-stationary"
+  stat <- test$statistic
   data <- series
   pvalue = test$p.value
   significance_level <- 0.05
@@ -397,6 +387,7 @@ make_adf_table <- function(returns = NULL, sq_returns = NULL, lag){
   result <- if(pvalue < significance_level) "The time series is stationary" else "The time series is non-stationary"
 
   dt <- make_test_dt(nullH, data,
+                     substr(stat, 1, 10),
                      substr(pvalue, 1, 10),
                      significance_level, pass, result)
 
@@ -413,12 +404,14 @@ make_t_table <- function(returns = NULL, sq_returns = NULL, lag){
   test <- suppressWarnings(t.test(data, k=lag))
   nullH <- "Mean = 0"
   data <- series
+  stat <- test$statistic
   pvalue = test$p.value
   significance_level <- 0.05
   pass <- if(pvalue < significance_level) "Reject" else "Accept"
   result <- if(pvalue < significance_level) "The mean of the data is not zero" else "The mean of the data is zero"
 
   dt <- make_test_dt(nullH, data,
+                     substr(stat, 1, 10),
                      substr(pvalue, 1, 10),
                      significance_level, pass, result)
 
@@ -435,12 +428,14 @@ make_arch_table <- function(returns = NULL, sq_returns = NULL){
   test <- suppressWarnings(ArchTest(data))
   nullH <- "No ARCH effects"
   data <- series
+  stat <- test$statistic
   pvalue = test$p.value
   significance_level <- 0.05
   pass <- if(pvalue < significance_level) "Reject" else "Accept"
   result <- if(pvalue < significance_level) "There are ARCH effects in the data" else "There are no ARCH effects in the data"
 
   dt <- make_test_dt(nullH, data,
+                     substr(stat, 1, 10),
                      substr(pvalue, 1, 10),
                      significance_level, pass, result)
 

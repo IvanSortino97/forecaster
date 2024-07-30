@@ -10,7 +10,7 @@ box::use(shiny[ div, moduleServer, NS, selectizeInput, reactiveVal,radioButtons,
          shiny.router[route_link],
          reactable[reactableOutput, renderReactable, getReactableState],
 )
-box::use(app / logic / general_utils[title, subtitle, tryCatch_toaster, page_footer])
+box::use(app / logic / general_utils[title, subtitle, tryCatch_toaster, page_footer, make_spinner])
 box::use(app / logic / stockInfo_utils[get_symbols, get_sp500, get_data,get_variation, get_dailyReturns,
                                        make_list, make_stock_table, make_stock_plot, make_volume_plot,
                                        years_ago, months_ago, scrape_yahoo_finance, make_stat_table,
@@ -136,13 +136,7 @@ server <- function(id, ...) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    spinner <- addLoader$new(
-      target_selector =  "loadingDiv",
-      type = "facebook", #ripple or dual-ring
-      height = "21.33px",
-      color = "#757575"
-    )
-
+    spinner <- make_spinner("loadingDiv")
 
     sp500 <- get_sp500()$Symbol
     symbols_dt <- reactive({

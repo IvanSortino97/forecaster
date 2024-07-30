@@ -1,8 +1,10 @@
 box::use(shiny[ img, tags, HTML, shinyOptions, getShinyOption, onSessionEnded, textOutput, withProgress],
          shiny.router[route_link],
+         shinyjs[hide, show],
          shinytoastr[toastr_error, toastr_warning],
          bslib[card],
          bsicons[bs_icon],
+         spsComps[addLoader],
          yaml[read_yaml, write_yaml])
 
 #' @export
@@ -118,6 +120,56 @@ page_footer <- function(hrefPagePrecedent = NULL, hrefPageNext = NULL, textPageP
         textPageNext
       )
     },
-    style = "overflow: hidden;" # Border styling for div
+    style = "overflow: hidden;"
   )
+}
+
+#' @export
+no_stock_message <- function() {
+
+  tags$div(style = "padding-top: 20px;",
+           tags$div(
+             class = "alert alert-warning mt-3 text-center",
+             tags$h6(class = "alert-heading",
+                     "Please select a stock before proceeding."),
+             tags$a(
+               'Go to "Stock Selection"',
+               href = route_link("stockInfo"),
+               class = "btn btn-light btn-sm mt-2",
+               style = "border: 1px solid #ccc;"
+             )
+           ))
+}
+
+#' @export
+select_stock_condition <- function(data, id_message, id_conditional){
+
+  if (!is.null(data)) {
+    show(id_conditional)
+    hide(id_message)
+  } else {
+    hide(id_conditional)
+    show(id_message)
+  }
+
+}
+
+
+#' @export
+make_spinner <- function(id, type = "facebook"){ addLoader$new(
+  target_selector = id,
+  type = type,#ripple or dual-ring
+  height = "21.33px",
+  color = "#757575"
+)
+}
+
+#' @export
+conditional_page_fillable <- function(title,
+                                      idLoader = ns("titleLoader"),
+                                      subtitle,
+                                      idMessage = ns("conditionalMessage"),
+                                      idPanel = ns("conditionalPanel")
+                                      ){
+#todo
 }

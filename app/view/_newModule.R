@@ -5,7 +5,7 @@ box::use(
   bslib[page_fillable, , card, card_header, card_body, card_title]
 )
 box::use(
-  app / logic / general_utils[title, subtitle, ...],
+  app / logic / general_utils[title, subtitle, make_spinner, no_stock_message],
 )
 
 #' @export
@@ -13,7 +13,19 @@ ui <- function(id) {
   ns <- NS(id)
 
   page_fillable(
-    div("New module")
+
+    title("New Module",
+          id = "titleLoader"),
+
+    subtitle("Subtitle"),
+
+    div(id = ns("conditionalMessage"), no_stock_message()),
+    div(id = ns("conditionalPanel"),
+
+
+
+
+    )
   )
 
 

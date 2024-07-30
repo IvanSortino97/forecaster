@@ -5,7 +5,7 @@ box::use(
   bslib[page_fillable, card, card_header, card_body, card_title]
 )
 box::use(
-  app / logic / general_utils[title, subtitle, ...],
+  app / logic / general_utils[title, subtitle, make_spinner, no_stock_message],
 )
 
 #' @export
@@ -14,8 +14,12 @@ ui <- function(id) {
 
   page_fillable(
 
-    title("Fit Models"),
+    title("Fit Models",
+          id = ns("titleLoader")),
     subtitle("Select models to fit and specify parameters"),
+
+    div(id = ns("conditionalMessage"), no_stock_message()),
+    div(id = ns("conditionalPanel"),
 
     checkboxGroupInput(ns("checkModels"),
                        label = NULL,
@@ -34,6 +38,7 @@ ui <- function(id) {
                        ))
 
 
+    )
   )
 
 
@@ -43,6 +48,13 @@ ui <- function(id) {
 server <- function(id, ...) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+
+    spinner <- make_spinner("titleLoader")
+
+    # hide("conditionalPanel")
+    # observeEvent(stockInfo()$data_xts() , {
+    #   select_stock_condition(stockInfo()$data_xts(),
+    #                          "conditionalMessage","conditionalPanel")})
 
 
   })

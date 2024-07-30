@@ -10,14 +10,13 @@ box::use(
   shinyjs[hide, show],
   htmltools[css],
   shinybrowser[get_device],
-  spsComps[addLoader],
 )
 box::use(
-  app / logic / general_utils[title, subtitle, page_footer ],
+  app / logic / general_utils[make_spinner, title, subtitle, page_footer, no_stock_message, select_stock_condition ],
   app / logic / stockAnalysis_utils[get_returns,get_lag,
                                     make_analysis_plots, make_price_table, make_cf_plot,
                                     make_box_table, make_jb_table, make_adf_table, make_t_table, make_arch_table,
-                                    test_header, no_stock_message],
+                                    test_header, ],
 )
 
 #' @export
@@ -27,11 +26,10 @@ ui <- function(id) {
   page_fillable(
 
 
-        title("Stock Analysis",
-              id = ns("stockAnalysisLoader")),
+    title("Stock Analysis",
+          id = ns("stockAnalysisLoader")),
 
-
-    subtitle("Perform analysis on returns, ACF, PACF e other things ... "),
+    subtitle("Analyze returns, squared returns, ACF, PACF, and statistical tests"),
 
       # conditional panel,
     div(id = ns("conditionalMessage"), no_stock_message()),
@@ -143,12 +141,18 @@ server <- function(id, stockInfo) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    spinner <- addLoader$new(
-      target_selector =  "stockAnalysisLoader",
-      type = "facebook", #ripple or dual-ring
-      height = "21.33px",
-      color = "#757575"
-    )
+    # spinner <- addLoader$new(
+    #   target_selector =  "stockAnalysisLoader",
+    #   type = "facebook", #ripple or dual-ring
+    #   height = "21.33px",
+    #   color = "#757575"
+    # )
+    spinner <- make_spinner("stockAnalysisLoader")
+
+    hide("conditionalPanel")
+    observeEvent(stockInfo()$data_xts() , {
+      select_stock_condition(stockInfo()$data_xts(),
+                             "conditionalMessage","conditionalPanel")})
 
     once <- reactiveVal(T)
     r <- reactiveValues()
@@ -157,24 +161,16 @@ server <- function(id, stockInfo) {
     plots_cf = reactiveVal()
     test = reactiveValues()
 
-    hide("conditionalPanel")
-    observeEvent(stockInfo()$data_xts() , {
-      if (!is.null(stockInfo()$data_xts())) {
-        show("conditionalPanel")
-        hide("conditionalMessage")
-      } else {
-        hide("conditionalPanel")
-        show("conditionalMessage")
-      }
-    })
+
+
 
     observe({
       req(stockInfo()$data_xts(), is_page("stockAnalysis") )
 
       spinner$show()
 
-      ret <- get_returns(stockInfo()$data_xts())
-      r$returns <- ret$returns
+      ret <- get_returns(stockInfo()$returns())
+      r$returns <- stockInfo()$returns()
       r$returns_dt <- ret$returns_dt
       r$squared_returns <- ret$squared_returns
       r$squared_returns_dt <- ret$squared_returns_dt

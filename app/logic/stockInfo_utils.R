@@ -260,11 +260,18 @@ make_stat_table <- function(dt, type){
 
 
   dt |> reactable(
-    columns = list(value = colDef(
+    columns = list(
+      name = colDef(
+        style = list(
+          textAlign = "left",
+          fontSize = "0.8rem"
+        )
+      ),
+      value = colDef(
       style = list(
         textAlign = "right",
         fontWeight = "600",
-        fontSize = "0.9rem",
+        fontSize = "0.8rem",
         lineHeight = "1.375rem"
       )
     )),
@@ -284,6 +291,8 @@ make_stock_table <- function(dt){
     compact = TRUE,
     showPageInfo = FALSE,
     paginationType = "simple",
+    #pagination = FALSE,
+    #height = "300px",
     searchable = TRUE,
     highlight = TRUE,
     wrap = FALSE,
