@@ -133,7 +133,7 @@ no_stock_message <- function() {
              tags$h6(class = "alert-heading",
                      "Please select a stock before proceeding."),
              tags$a(
-               'Go to "Stock Selection"',
+               'Go to ', tags$strong('Stock Selection'),
                href = route_link("stockInfo"),
                class = "btn btn-light btn-sm mt-2",
                style = "border: 1px solid #ccc;"
@@ -181,3 +181,7 @@ conditional_page_fillable <- function(title,
     tags$div(id = ns(idPanel), body)
   )
 }
+
+
+#' @export
+in_card_subtitle_style = "font-weight: 500; line-height: 1.375rem;font-size: 1rem; color: #464646;"
