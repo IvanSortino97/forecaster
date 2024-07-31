@@ -173,6 +173,7 @@ conditional_page_fillable <- function(title,
                                       ns,
                                       body){
 
+
   page_fillable(
     title(title, id = ns(idLoader)),
     subtitle(subtitle),

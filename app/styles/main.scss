@@ -2,6 +2,10 @@
     z-index: 1;
 
 }
+.irs--shiny  {
+      z-index: 1;
+}
+
 
 /* Sidebar custom themes */
 .custom-accordion-section {
@@ -120,3 +124,12 @@
   padding-top: 13px;
 }
 
+/* multi column checkbox */
+.multicol {
+  height: auto;
+  -webkit-column-count: 2; /* Chrome, Safari, Opera */
+  -moz-column-count: 2;    /* Firefox */
+  column-count: 2;
+  -moz-column-fill: auto;
+  -column-fill: auto;
+}

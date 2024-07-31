@@ -11,7 +11,8 @@ box::use(
 page_links <- list(
   list(title = "Home", page = "/"),
   list(title = "Stock Selection", page = "stockInfo"),
-  list(title = "Stock Analysis", page = "stockAnalysis")
+  list(title = "Stock Analysis", page = "stockAnalysis"),
+  list(title = "Fit model", page = "garchFit")
 )
 
 #' @export

@@ -135,7 +135,7 @@ server <- function(id, stockInfo) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    spinner <- make_spinner("stockAnalysisLoader")
+    spinner <- make_spinner("titleLoader")
 
     hide("conditionalPanel")
     observeEvent(stockInfo()$data_xts(), {
