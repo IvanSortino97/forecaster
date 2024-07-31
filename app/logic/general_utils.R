@@ -2,7 +2,7 @@ box::use(shiny[ img, tags, HTML, shinyOptions, getShinyOption, onSessionEnded, t
          shiny.router[route_link],
          shinyjs[hide, show],
          shinytoastr[toastr_error, toastr_warning],
-         bslib[card],
+         bslib[card, page_fillable],
          bsicons[bs_icon],
          spsComps[addLoader],
          yaml[read_yaml, write_yaml])
@@ -142,7 +142,7 @@ no_stock_message <- function() {
 }
 
 #' @export
-select_stock_condition <- function(data, id_message, id_conditional){
+select_stock_condition <- function(data, id_message = "conditionalMessage", id_conditional = "conditionalPanel"){
 
   if (!is.null(data)) {
     show(id_conditional)
@@ -166,10 +166,17 @@ make_spinner <- function(id, type = "facebook"){ addLoader$new(
 
 #' @export
 conditional_page_fillable <- function(title,
-                                      idLoader = ns("titleLoader"),
                                       subtitle,
-                                      idMessage = ns("conditionalMessage"),
-                                      idPanel = ns("conditionalPanel")
-                                      ){
-#todo
+                                      idLoader = "titleLoader",
+                                      idMessage = "conditionalMessage",
+                                      idPanel = "conditionalPanel",
+                                      ns,
+                                      body){
+
+  page_fillable(
+    title(title, id = ns(idLoader)),
+    subtitle(subtitle),
+    tags$div(id = ns(idMessage), no_stock_message()),
+    tags$div(id = ns(idPanel), body)
+  )
 }

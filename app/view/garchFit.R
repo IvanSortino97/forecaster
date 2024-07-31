@@ -2,24 +2,23 @@
 
 box::use(
   shiny[..., checkboxGroupInput, div, moduleServer, NS],
-  bslib[page_fillable, card, card_header, card_body, card_title]
+  bslib[page_fillable, card, card_header, card_body, card_title],
+  shinyjs[show, hide]
 )
 box::use(
-  app / logic / general_utils[title, subtitle, make_spinner, no_stock_message],
+  app / logic / general_utils[conditional_page_fillable, make_spinner, select_stock_condition],
 )
 
 #' @export
 ui <- function(id) {
   ns <- NS(id)
 
-  page_fillable(
+  conditional_page_fillable(ns = ns,
 
-    title("Fit Models",
-          id = ns("titleLoader")),
-    subtitle("Select models to fit and specify parameters"),
+    title = "Fit Models",
+    subtitle = "Select models to fit and specify parameters",
+    body = div(
 
-    div(id = ns("conditionalMessage"), no_stock_message()),
-    div(id = ns("conditionalPanel"),
 
     checkboxGroupInput(ns("checkModels"),
                        label = NULL,
@@ -38,23 +37,21 @@ ui <- function(id) {
                        ))
 
 
+
     )
   )
-
-
 }
 
 #' @export
-server <- function(id, ...) {
+server <- function(id, stockInfo) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     spinner <- make_spinner("titleLoader")
 
-    # hide("conditionalPanel")
-    # observeEvent(stockInfo()$data_xts() , {
-    #   select_stock_condition(stockInfo()$data_xts(),
-    #                          "conditionalMessage","conditionalPanel")})
+    hide("conditionalPanel")
+    observeEvent(stockInfo()$data_xts() , {
+      select_stock_condition(stockInfo()$data_xts())})
 
 
   })

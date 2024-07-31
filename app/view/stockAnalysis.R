@@ -12,7 +12,7 @@ box::use(
   shinybrowser[get_device],
 )
 box::use(
-  app / logic / general_utils[make_spinner, title, subtitle, page_footer, no_stock_message, select_stock_condition ],
+  app / logic / general_utils[make_spinner, conditional_page_fillable, page_footer, select_stock_condition ],
   app / logic / stockAnalysis_utils[get_returns,get_lag,
                                     make_analysis_plots, make_price_table, make_cf_plot,
                                     make_box_table, make_jb_table, make_adf_table, make_t_table, make_arch_table,
@@ -23,18 +23,12 @@ box::use(
 ui <- function(id) {
   ns <- NS(id)
 
-  page_fillable(
+  conditional_page_fillable(ns = ns,
 
 
-    title("Stock Analysis",
-          id = ns("stockAnalysisLoader")),
-
-    subtitle("Analyze returns, squared returns, ACF, PACF, and statistical tests"),
-
-      # conditional panel,
-    div(id = ns("conditionalMessage"), no_stock_message()),
-    div(id = ns("conditionalPanel"),
-
+    title = "Stock Analysis",
+    subtitle = "Analyze returns, squared returns, ACF, PACF, and statistical tests",
+    body = div(
     navset_card_underline(
       height = 400,
       full_screen = TRUE,
@@ -141,18 +135,11 @@ server <- function(id, stockInfo) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    # spinner <- addLoader$new(
-    #   target_selector =  "stockAnalysisLoader",
-    #   type = "facebook", #ripple or dual-ring
-    #   height = "21.33px",
-    #   color = "#757575"
-    # )
     spinner <- make_spinner("stockAnalysisLoader")
 
     hide("conditionalPanel")
-    observeEvent(stockInfo()$data_xts() , {
-      select_stock_condition(stockInfo()$data_xts(),
-                             "conditionalMessage","conditionalPanel")})
+    observeEvent(stockInfo()$data_xts(), {
+      select_stock_condition(stockInfo()$data_xts())})
 
     once <- reactiveVal(T)
     r <- reactiveValues()
