@@ -1,9 +1,10 @@
 box::use(
-  shiny[incProgress,withProgress, selectizeInput, tags, checkboxGroupInput,checkboxInput, conditionalPanel, numericInput],
+  shiny[ incProgress,withProgress, selectizeInput, tags, checkboxGroupInput,checkboxInput, conditionalPanel, numericInput],
   bslib[card, card_header, card_body, layout_column_wrap, navset_underline, nav_panel],
   bsicons[bs_icon],
   data.table[data.table],
-  reactable[reactableOutput],
+  reactable[reactableOutput, reactable, colDef],
+  htmlwidgets[JS],
   shinyWidgets[switchInput],
   stringr[str_pad],
   stats[setNames],
@@ -33,11 +34,28 @@ model_checkbox <- function(id){
   )
 }
 
+#' @export
+model_switch <- function(model) {
+  switch(model,
+         "GARCH" = "sGARCH",
+         "eGARCH" = "eGARCH",
+         "GJRGARCH" = "gjrGARCH",
+         "TGARCH" = "TGARCH",
+         "APARCH" = "apARCH",
+         "IGARCH" = "iGARCH",
+         "FIGARCH" = "fGARCH",
+         "QGARCH" = "qGARCH",
+         "NGARCH" = "nGARCH",
+         "VGARCH" = "vGARCH"
+  )
+}
 
 #' @export
 fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data) {
+  model_name <- model_switch(model)
+
   spec <- ugarchspec(
-    variance.model = list(model = model, garchOrder = c(p, q)),
+    variance.model = list(model = model_name, garchOrder = c(p, q)),
     mean.model = list(armaOrder = c(ar, ma), include.mean = TRUE),
     distribution.model = dist  # Distribution model
   )
@@ -48,6 +66,7 @@ fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data) {
   ic <- infocriteria(fit)
   return(ic)
 }
+
 
 
 distributions = c("Normal" = "norm",
@@ -117,6 +136,8 @@ get_best_fit <- function(model, returns){
 
 }
 
+#' @export
+make_id <- function(model, suffix = ""){paste0(sub(" - ","",model), suffix)}
 
 settings_header <- function(title, model, ns ) {
   card_header(
@@ -125,10 +146,10 @@ settings_header <- function(title, model, ns ) {
 
              tags$div(class = "d-flex justify-content-end align-items-center",
                       conditionalPanel(ns = ns,
-                                       condition = sprintf("input.%s === true", paste0(model, "switch")),
+                                       condition = sprintf("input.%s === true", make_id(model, "switch")),
                                        bsicons::bs_icon("info")),
                       switchInput(
-                        inputId = ns(paste0(model, "switch")),
+                        inputId = ns(make_id(model,"switch")),
                         labelWidth = "100%",
                         size = "mini",
                         inline = TRUE,
@@ -149,9 +170,9 @@ parameter_card <- function(title, model, body, ns) {
     settings_header(title, model, ns),
     card_body(gap = 0,
               conditionalPanel(ns = ns,
-                               condition = sprintf("input.%s === true", paste0(model, "switch")),
+                               condition = sprintf("input.%s === true", make_id(model, "switch")),
                                tags$div(style = "padding-top: 10px; padding-bottom: 15px;",
-                               reactableOutput(ns(paste0(model, "autoTable")))
+                               reactableOutput(ns(make_id(model, "autoTable")))
                                )
               ),
               body)
@@ -163,7 +184,7 @@ conditional_model <- function(ns , model){
 
   conditionalPanel(ns = ns,
                    condition = sprintf("input.modelCheckbox.includes('%s')",
-                                       sub(" - ","",model) ),
+                                       make_id(model) ),
                    parameter_card(
                      ns = ns,
                      model = model,
@@ -184,23 +205,23 @@ model_body <- function(ns, model){
 
     tags$div(tags$p("Distribution", style = paste(in_card_subtitle_style,"font-size: 0.9rem;padding-top: 15px")),
              tags$div(style = "width: 50%;", class = "model-param",
-             selectizeInput(inputId = ns(paste0(model,"dist")),
+             selectizeInput(inputId = ns(make_id(model,"dist")),
                             label = NULL, width = "100%",
                             choices = distributions)),
              tags$p("GARCH Order", style = paste(in_card_subtitle_style,"font-size: 0.9rem;")),
              tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
-             numericInput(inputId = ns(paste0(model,"p")),
+             numericInput(inputId = ns(make_id(model,"p")),
                           label = NULL, value = 1),
-             numericInput(inputId = ns(paste0(model,"q")),
+             numericInput(inputId = ns(make_id(model,"q")),
                           label = NULL, value = 1)
              ),
              tags$p("ARMA Order", style = paste(in_card_subtitle_style,"font-size: 0.9rem")),
              tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
-             numericInput(inputId = ns(paste0(model,"ar")),
+             numericInput(inputId = ns(make_id(model,"ar")),
                           label = NULL, value = 0),
-             numericInput(inputId = ns(paste0(model,"ma")),
+             numericInput(inputId = ns(make_id(model,"ma")),
                           label = NULL, value = 0)),
-             checkboxInput(inputId = ns(paste0(model, "includeMean")), value = FALSE, label = "Include mean")
+             checkboxInput(inputId = ns(make_id(model, "includeMean")), value = FALSE, label = "Include mean")
              )
             ),
    nav_panel("Results",
@@ -210,4 +231,59 @@ model_body <- function(ns, model){
              )
              )
   )
+}
+
+
+
+
+#' @export
+get_param <- function(best_fit, criteria){
+  best_fit_index <- which.min(best_fit$results[[criteria]])
+  dist <- best_fit$results[best_fit_index, ]$dist
+  p <- best_fit$results[best_fit_index, ]$p
+  q <- best_fit$results[best_fit_index, ]$q
+  return(list(
+    index = best_fit_index,
+    dist = dist,
+    p = p,
+    q = q
+  ))
+}
+
+#' @export
+make_autoTable <- function(dt, best_fit_index, criteria) {
+
+  best_fit_group <- dt[best_fit_index, "Distribution"]
+
+  reactable(
+    dt[, 1:4], # Display the first four columns
+    groupBy = "Distribution",
+    compact = TRUE,
+    defaultColDef = colDef(
+      style = function(value) {
+        color <- if (value == "error") "red" else "black"
+        list(fontSize = "0.8rem", color = color)
+      },
+      headerStyle = list(
+        fontSize = "0.8rem"
+      )
+    ),
+    rowStyle = function(index) {
+      if (index == best_fit_index) {
+        list(backgroundColor = "#FFFFCC", fontWeight = "bold")
+      }
+    },
+    columns = list(
+      Distribution = colDef(
+        width = 200,
+        style = list(
+          whiteSpace = "nowrap",
+          fontSize = "0.8rem"
+        )
+      ),
+      Parameters = colDef(align = "right"),
+      AIC = colDef(width = 120, align = "right"),
+      BIC = colDef(width = 120, align = "right")
+    )
+    )
 }

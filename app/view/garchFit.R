@@ -3,8 +3,9 @@
 box::use(
   shiny[..., conditionalPanel, observeEvent, reactiveVal, checkboxGroupInput, div, moduleServer, NS],
   bslib[page_fillable, card, card_header, card_body, card_title],
-  shinyjs[show, hide, disable],
+  shinyjs[show, hide, disable, enable],
   reactable[reactable, renderReactable, colDef],
+  shiny.router[is_page],
 )
 box::use(
   app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, select_stock_condition],
@@ -71,57 +72,60 @@ server <- function(id, stockInfo) {
       select_stock_condition(stockInfo()$data_xts())
     })
 
-    observeEvent(input$GARCHswitch,{
-      req(stockInfo()$returns(), input$GARCHswitch)
+    once <- reactiveVal(TRUE)
+    selected <- reactiveVal(NULL)
 
-      model <- as.character("sGARCH")
+    observe({
+      req(stockInfo()$returns(), is_page("garchFit"))
 
-      best_fit <- get_best_fit(model, stockInfo()$returns())
-      criteria = "AIC"
-      best_fit_index <- which.min(best_fit$results[[criteria]])
-      dist <- best_fit$results[best_fit_index, ]$dist
-      p <- best_fit$results[best_fit_index, ]$p
-      q <- best_fit$results[best_fit_index, ]$q
+      if(once()){
+      selected(input$modelCheckbox)
+      print(selected()) # compute selected
+      once(FALSE)
+      }
 
-      #TODO: enable inputs when switch to OFF
-      updateSelectizeInput(inputId = "GARCHdist", selected = dist)
-      disable("GARCHdist")
-      updateNumericInput(inputId = "GARCHp", value = p)
-      disable("GARCHp")
-      updateNumericInput(inputId = "GARCHq", value = q)
-      disable("GARCHq")
+    lapply(input$modelCheckbox, function(x){
 
-      output$GARCHautoTable <- renderReactable({
+    idSwitch <- make_id(x,"switch")
+    idDist <- make_id(x,"dist")
+    idP <- make_id(x,"p")
+    idQ <- make_id(x,"q")
+    idAutoTable <- make_id(x,"autoTable")
 
 
-        reactable(
-          best_fit$results[, 1:4], # Display the first four columns
-          groupBy = "Distribution",
-          compact = TRUE,
-          defaultColDef = colDef(
-            style = function(value) {
-              color <- if (value == "error") "red" else "black"
-              list(fontSize = "0.8rem", color = color)
-            }
-          ),
-          rowStyle = function(index) {
-            if (index == best_fit_index) {
-              list(backgroundColor = "#FFFFCC", fontWeight = "bold")
-            } else {
-              list()
-            }
-          },
-          columns = list(
-            Distribution = colDef(
-              width = 200,
-              style = list(whiteSpace = "nowrap")
-            ),
-            AIC = colDef(width = 120),
-            BIC = colDef(width = 120)
-          )
-        )
+      req(stockInfo()$returns())
 
-      })
-    })
+      if(!input[[idSwitch]]){
+
+        enable(idDist)
+        enable(idP)
+        enable(idQ)
+
+      } else {
+
+        best_fit <- get_best_fit(model = x, stockInfo()$returns())
+        criteria = "AIC"
+        param <- get_param(best_fit, criteria)
+
+        updateSelectizeInput(inputId = idDist, selected = param$dist)
+        updateNumericInput(inputId = idP, value = param$p)
+        updateNumericInput(inputId = idQ, value = param$q)
+
+        disable(idDist)
+        disable(idP)
+        disable(idQ)
+
+        output[[idAutoTable]] <- renderReactable({
+          make_autoTable(best_fit$results, param$index, criteria)
+        })
+
+      }
+    }) #end lapply
+
+    }) #end observe
+
+
+
+
   })
 }
