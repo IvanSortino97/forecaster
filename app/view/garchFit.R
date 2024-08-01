@@ -3,9 +3,8 @@
 box::use(
   shiny[..., conditionalPanel, observeEvent, reactiveVal, checkboxGroupInput, div, moduleServer, NS],
   bslib[page_fillable, card, card_header, card_body, card_title],
-  shinyjs[show, hide],
-  data.table[data.table],
-  reactable[reactable, renderReactable],
+  shinyjs[show, hide, disable],
+  reactable[reactable, renderReactable, colDef],
 )
 box::use(
   app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, select_stock_condition],
@@ -67,68 +66,61 @@ server <- function(id, stockInfo) {
 
     spinner <- make_spinner("titleLoader")
 
-    # Example of a function call that might be used in the server logic
-    # hide("conditionalPanel")
-    # observeEvent(stockInfo()$data_xts() , {
-    #   select_stock_condition(stockInfo()$data_xts())
-    # })
+    hide("conditionalPanel")
+    observeEvent(stockInfo()$data_xts() , {
+      select_stock_condition(stockInfo()$data_xts())
+    })
 
     observeEvent(input$GARCHswitch,{
       req(stockInfo()$returns(), input$GARCHswitch)
 
       model <- as.character("sGARCH")
-      distributions <- c("norm", "std", "snorm", "sstd")
 
-      results <- list()
-      distributions_combinations <- expand.grid(p = 1:3,
-                                                q = 1:3,
-                                                ar = 0,
-                                                ma = 0,
-                                                dist = distributions)
-      len <- nrow(distributions_combinations)
+      best_fit <- get_best_fit(model, stockInfo()$returns())
+      criteria = "AIC"
+      best_fit_index <- which.min(best_fit$results[[criteria]])
+      dist <- best_fit$results[best_fit_index, ]$dist
+      p <- best_fit$results[best_fit_index, ]$p
+      q <- best_fit$results[best_fit_index, ]$q
 
-      withProgress(
-        message = model,
-        value = 0,{
-
-          for (i in 1:len) {
-            p <- as.integer(distributions_combinations$p[i])
-            q <- as.integer(distributions_combinations$q[i])
-            ar <- as.integer(distributions_combinations$ar[i])
-            ma <- as.integer(distributions_combinations$ma[i])
-            dist <- as.character(distributions_combinations$dist[i])
-
-            incProgress(amount = 1/len,
-                        detail = sprintf("[%s] GARCH(%s,%s) ARMA(%s,%s)",dist, p, q, ar, ma))
-
-            ic <-fit_garch(model, p, q, ar, ma, dist, stockInfo()$returns())
-            results[[paste(p, q, ar, ma, dist, sep = "_")]] <- ic
-          }
-        }
-      )
-
-      results_df <- do.call(rbind, lapply(names(results), function(x) data.table(
-        Model = x,
-        AIC = results[[x]][1],
-        BIC = results[[x]][2]
-      )))
-
-      # Find the best model based on AIC
-      best_aic <- results_df[which.min(results_df$AIC), ]
-      cat("Best model based on AIC:\n")
-      print(best_aic)
-
-      # Find the best model based on BIC
-      best_bic <- results_df[which.min(results_df$BIC), ]
-      cat("Best model based on BIC:\n")
-      print(best_bic)
-
-      #updateNumericInput(inputId = "GARCHp", value = 3333)
-      #updateNumericInput(inputId = "GARCHq", value = 3333)
+      #TODO: enable inputs when switch to OFF
+      updateSelectizeInput(inputId = "GARCHdist", selected = dist)
+      disable("GARCHdist")
+      updateNumericInput(inputId = "GARCHp", value = p)
+      disable("GARCHp")
+      updateNumericInput(inputId = "GARCHq", value = q)
+      disable("GARCHq")
 
       output$GARCHautoTable <- renderReactable({
 
-        reactable(results_df, compact = TRUE)
+
+        reactable(
+          best_fit$results[, 1:4], # Display the first four columns
+          groupBy = "Distribution",
+          compact = TRUE,
+          defaultColDef = colDef(
+            style = function(value) {
+              color <- if (value == "error") "red" else "black"
+              list(fontSize = "0.8rem", color = color)
+            }
+          ),
+          rowStyle = function(index) {
+            if (index == best_fit_index) {
+              list(backgroundColor = "#FFFFCC", fontWeight = "bold")
+            } else {
+              list()
+            }
+          },
+          columns = list(
+            Distribution = colDef(
+              width = 200,
+              style = list(whiteSpace = "nowrap")
+            ),
+            AIC = colDef(width = 120),
+            BIC = colDef(width = 120)
+          )
+        )
+
       })
     })
   })
