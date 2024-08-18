@@ -7,6 +7,12 @@
 }
 
 
+/* Progess bar notification bug */
+div#shiny-notification-panel {
+  max-width: 100vw !important;  /* Ensure it does not exceed the viewport width */
+  word-wrap: break-word;  /* Wrap long words */
+}
+
 /* Sidebar custom themes */
 .custom-accordion-section {
   padding: 10px 15px;
