@@ -43,12 +43,12 @@ model_switch <- function(model) {
 }
 
 #' @export
-fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data, info = T) {
+fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data, info = T, mean = T) {
   model_name <- model_switch(model)
 
   spec <- ugarchspec(
     variance.model = list(model = model_name, garchOrder = c(p, q)),
-    mean.model = list(armaOrder = c(ar, ma), include.mean = TRUE),
+    mean.model = list(armaOrder = c(ar, ma), include.mean = mean),
     distribution.model = dist  # Distribution model
   )
 

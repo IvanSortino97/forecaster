@@ -76,6 +76,7 @@ server <- function(id, stockInfo) {
         idQ <- make_id(x, "q")
         idAR <- make_id(x, "ar")
         idMA <- make_id(x, "ma")
+        idMean <- make_id(x, "includeMean")
         idAutoTable <- make_id(x, "autoTable")
 
         # Get current parameters
@@ -84,7 +85,8 @@ server <- function(id, stockInfo) {
           p = input[[idP]],
           q = input[[idQ]],
           ar = input[[idAR]],
-          ma = input[[idMA]]
+          ma = input[[idMA]],
+          ma = input[[idMean]]
         )
 
         # Initialize previousParams if it's not already set for the current model
@@ -94,7 +96,8 @@ server <- function(id, stockInfo) {
             p = NULL,
             q = NULL,
             ar = NULL,
-            ma = NULL
+            ma = NULL,
+            mean = NULL
           )
         }
 
@@ -128,7 +131,8 @@ server <- function(id, stockInfo) {
             p = input[[idP]],
             q = input[[idQ]],
             ar = input[[idAR]],
-            ma = input[[idMA]]
+            ma = input[[idMA]],
+            mean = input[[idMean]]
           )
 
         } else if (!input[[idSwitch]]) {
@@ -154,6 +158,7 @@ server <- function(id, stockInfo) {
                                        ma = not_null(input[[idMA]]),
                                        dist = input[[idDist]],
                                        data = stockInfo()$returns(),
+                                       mean = input[[idMean]],
                                        info = FALSE)
 
           previousParams[[x]] <- currentParams
