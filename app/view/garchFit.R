@@ -36,9 +36,6 @@ ui <- function(id) {
                                                 model = "GJR - GARCH"
                               ),
                               conditional_model(ns = ns,
-                                                model = "TGARCH"
-                              ),
-                              conditional_model(ns = ns,
                                                 model = "APARCH"
                               ),
                               conditional_model(ns = ns,
@@ -46,16 +43,7 @@ ui <- function(id) {
                               ),
                               conditional_model(ns = ns,
                                                 model = "FIGARCH"
-                              ),
-                              conditional_model(ns = ns,
-                                                model = "QGARCH"
-                              ),
-                              conditional_model(ns = ns,
-                                                model = "NGARCH"
-                              ),
-                              conditional_model(ns = ns,
-                                                model = "VGARCH"
-                              ),
+                              )
                             )
   )
 }
@@ -73,35 +61,46 @@ server <- function(id, stockInfo) {
     })
 
     once <- reactiveVal(TRUE)
-    selected <- reactiveVal(NULL)
+    toComputeAuto <- reactiveValues()
+
 
     observe({
       req(stockInfo()$returns(), is_page("garchFit"))
 
-      if(once()){
-      selected(input$modelCheckbox)
-      print(selected()) # compute selected
-      once(FALSE)
-      }
+      # if(once()){
+      # once(FALSE)
+      # }
+
+      print("outside lapply")
+      print(toComputeAuto)
 
     lapply(input$modelCheckbox, function(x){
+      print(paste0("begin lapply, x = ", x))
 
     idSwitch <- make_id(x,"switch")
     idDist <- make_id(x,"dist")
     idP <- make_id(x,"p")
     idQ <- make_id(x,"q")
+    idAR <- make_id(x,"ar")
+    idMA <- make_id(x,"ma")
     idAutoTable <- make_id(x,"autoTable")
 
-
-      req(stockInfo()$returns())
-
       if(!input[[idSwitch]]){
+      print(paste0("if not begin, ", toComputeAuto[[x]]))
 
         enable(idDist)
         enable(idP)
         enable(idQ)
+        enable(idAR)
+        enable(idMA)
+
+        toComputeAuto[[x]] <- TRUE
+      print(paste0("if not after, ", toComputeAuto[[x]]))
 
       } else {
+      print(paste0("else begin, ", toComputeAuto[[x]]))
+
+        req(toComputeAuto[[x]])
 
         best_fit <- get_best_fit(model = x, stockInfo()$returns())
         criteria = "AIC"
@@ -110,14 +109,21 @@ server <- function(id, stockInfo) {
         updateSelectizeInput(inputId = idDist, selected = param$dist)
         updateNumericInput(inputId = idP, value = param$p)
         updateNumericInput(inputId = idQ, value = param$q)
+        updateNumericInput(inputId = idAR, value = param$ar)
+        updateNumericInput(inputId = idMA, value = param$ma)
 
         disable(idDist)
         disable(idP)
         disable(idQ)
+        disable(idAR)
+        disable(idMA)
 
         output[[idAutoTable]] <- renderReactable({
           make_autoTable(best_fit$results, param$index, criteria)
         })
+
+        toComputeAuto[[x]] <- FALSE
+      print(paste0("else after, ", toComputeAuto[[x]]))
 
       }
     }) #end lapply

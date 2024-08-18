@@ -23,13 +23,9 @@ model_checkbox <- function(id){
                          "GARCH" = "GARCH",
                          "eGARCH" = "eGARCH",
                          "GJR - GARCH" = "GJRGARCH",
-                         "TGARCH" = "TGARCH",
                          "APARCH" = "APARCH",
                          "IGARCH" = "IGARCH",
-                         "FIGARCH" = "FIGARCH",
-                         "QGARCH" = "QGARCH",
-                         "NGARCH" = "NGARCH",
-                         "VGARCH" = "VGARCH"
+                         "FIGARCH" = "FIGARCH"
                        ))
   )
 }
@@ -40,13 +36,9 @@ model_switch <- function(model) {
          "GARCH" = "sGARCH",
          "eGARCH" = "eGARCH",
          "GJRGARCH" = "gjrGARCH",
-         "TGARCH" = "TGARCH",
          "APARCH" = "apARCH",
          "IGARCH" = "iGARCH",
-         "FIGARCH" = "fGARCH",
-         "QGARCH" = "qGARCH",
-         "NGARCH" = "nGARCH",
-         "VGARCH" = "vGARCH"
+         "FIGARCH" = "fGARCH"
   )
 }
 
@@ -145,9 +137,10 @@ settings_header <- function(title, model, ns ) {
              tags$div(style = "padding-top: 5px;", title),
 
              tags$div(class = "d-flex justify-content-end align-items-center",
-                      conditionalPanel(ns = ns,
-                                       condition = sprintf("input.%s === true", make_id(model, "switch")),
-                                       bsicons::bs_icon("info")),
+                      # Show info icon -> make it a button to hide the parameter table
+                      # conditionalPanel(ns = ns,
+                      #                  condition = sprintf("input.%s === true", make_id(model, "switch")),
+                      #                  bsicons::bs_icon("info")),
                       switchInput(
                         inputId = ns(make_id(model,"switch")),
                         labelWidth = "100%",
@@ -169,12 +162,12 @@ parameter_card <- function(title, model, body, ns) {
   card(
     settings_header(title, model, ns),
     card_body(gap = 0,
-              conditionalPanel(ns = ns,
-                               condition = sprintf("input.%s === true", make_id(model, "switch")),
-                               tags$div(style = "padding-top: 10px; padding-bottom: 15px;",
-                               reactableOutput(ns(make_id(model, "autoTable")))
-                               )
-              ),
+              # conditionalPanel(ns = ns,
+              #                  condition = sprintf("input.%s === true", make_id(model, "switch")),
+              #                  tags$div(style = "padding-top: 10px; padding-bottom: 15px;",
+              #                  reactableOutput(ns(make_id(model, "autoTable")))
+              #                  )
+              # ),
               body)
   )
 }
@@ -202,6 +195,13 @@ model_body <- function(ns, model){
   navset_underline(
 
    nav_panel("Parameters",
+
+             conditionalPanel(ns = ns,
+                              condition = sprintf("input.%s === true", make_id(model, "switch")),
+                              tags$div(style = "padding-top: 10px; padding-bottom: 10px;",
+                                       reactableOutput(ns(make_id(model, "autoTable")))
+                              )
+             ),
 
     tags$div(tags$p("Distribution", style = paste(in_card_subtitle_style,"font-size: 0.9rem;padding-top: 15px")),
              tags$div(style = "width: 50%;", class = "model-param",
@@ -233,20 +233,21 @@ model_body <- function(ns, model){
   )
 }
 
-
-
-
 #' @export
 get_param <- function(best_fit, criteria){
   best_fit_index <- which.min(best_fit$results[[criteria]])
   dist <- best_fit$results[best_fit_index, ]$dist
   p <- best_fit$results[best_fit_index, ]$p
   q <- best_fit$results[best_fit_index, ]$q
+  ar <- best_fit$results[best_fit_index, ]$ar
+  ma <- best_fit$results[best_fit_index, ]$ma
   return(list(
     index = best_fit_index,
     dist = dist,
     p = p,
-    q = q
+    q = q,
+    ar = ar,
+    ma = ma
   ))
 }
 
