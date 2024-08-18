@@ -56,82 +56,115 @@ server <- function(id, stockInfo) {
     spinner <- make_spinner("titleLoader")
 
     hide("conditionalPanel")
-    observeEvent(stockInfo()$data_xts() , {
+    observeEvent(stockInfo()$data_xts(), {
       select_stock_condition(stockInfo()$data_xts())
     })
 
-    once <- reactiveVal(TRUE)
     toComputeAuto <- reactiveValues()
-
+    previousParams <- reactiveValues()
+    fitResults <- reactiveValues()
 
     observe({
       req(stockInfo()$returns(), is_page("garchFit"))
 
-      # if(once()){
-      # once(FALSE)
-      # }
+      # Iterate over the models in the checkbox input
+      lapply(input$modelCheckbox, function(x) {
 
-      print("outside lapply")
-      print(toComputeAuto)
+        idSwitch <- make_id(x, "switch")
+        idDist <- make_id(x, "dist")
+        idP <- make_id(x, "p")
+        idQ <- make_id(x, "q")
+        idAR <- make_id(x, "ar")
+        idMA <- make_id(x, "ma")
+        idAutoTable <- make_id(x, "autoTable")
 
-    lapply(input$modelCheckbox, function(x){
-      print(paste0("begin lapply, x = ", x))
+        # Get current parameters
+        currentParams <- list(
+          dist = input[[idDist]],
+          p = input[[idP]],
+          q = input[[idQ]],
+          ar = input[[idAR]],
+          ma = input[[idMA]]
+        )
 
-    idSwitch <- make_id(x,"switch")
-    idDist <- make_id(x,"dist")
-    idP <- make_id(x,"p")
-    idQ <- make_id(x,"q")
-    idAR <- make_id(x,"ar")
-    idMA <- make_id(x,"ma")
-    idAutoTable <- make_id(x,"autoTable")
+        # Initialize previousParams if it's not already set for the current model
+        if (is.null(previousParams[[x]])) {
+          previousParams[[x]] <- list(
+            dist = NULL,
+            p = NULL,
+            q = NULL,
+            ar = NULL,
+            ma = NULL
+          )
+        }
 
-      if(!input[[idSwitch]]){
-      print(paste0("if not begin, ", toComputeAuto[[x]]))
+        # Check if the switch is TRUE and the computation hasn't been done yet
+        if (input[[idSwitch]] && is.null(toComputeAuto[[x]])) {
 
-        enable(idDist)
-        enable(idP)
-        enable(idQ)
-        enable(idAR)
-        enable(idMA)
+          best_fit <- get_best_fit(model = x, stockInfo()$returns())
+          criteria <- "AIC"
+          param <- get_param(best_fit, criteria)
 
-        toComputeAuto[[x]] <- TRUE
-      print(paste0("if not after, ", toComputeAuto[[x]]))
+          updateSelectizeInput(inputId = idDist, selected = param$dist)
+          updateNumericInput(inputId = idP, value = param$p)
+          updateNumericInput(inputId = idQ, value = param$q)
+          updateNumericInput(inputId = idAR, value = param$ar)
+          updateNumericInput(inputId = idMA, value = param$ma)
 
-      } else {
-      print(paste0("else begin, ", toComputeAuto[[x]]))
+          disable(idDist)
+          disable(idP)
+          disable(idQ)
+          disable(idAR)
+          disable(idMA)
 
-        req(toComputeAuto[[x]])
+          # Results in Table
+          output[[idAutoTable]] <- renderReactable({
+            make_autoTable(best_fit$results, param$index, criteria)
+          })
 
-        best_fit <- get_best_fit(model = x, stockInfo()$returns())
-        criteria = "AIC"
-        param <- get_param(best_fit, criteria)
+          toComputeAuto[[x]] <- TRUE
+          currentParams <- list(
+            dist = input[[idDist]],
+            p = input[[idP]],
+            q = input[[idQ]],
+            ar = input[[idAR]],
+            ma = input[[idMA]]
+          )
 
-        updateSelectizeInput(inputId = idDist, selected = param$dist)
-        updateNumericInput(inputId = idP, value = param$p)
-        updateNumericInput(inputId = idQ, value = param$q)
-        updateNumericInput(inputId = idAR, value = param$ar)
-        updateNumericInput(inputId = idMA, value = param$ma)
+        } else if (!input[[idSwitch]]) {
+          # If the switch is off, re-enable the inputs and allow computation again
+          enable(idDist)
+          enable(idP)
+          enable(idQ)
+          enable(idAR)
+          enable(idMA)
 
-        disable(idDist)
-        disable(idP)
-        disable(idQ)
-        disable(idAR)
-        disable(idMA)
+          # Allow the computation to be triggered again if the switch is turned back on
+          toComputeAuto[[x]] <- NULL
+        }
 
-        output[[idAutoTable]] <- renderReactable({
-          make_autoTable(best_fit$results, param$index, criteria)
-        })
+        # Fit the model only if the parameters have changed
+        if (!identical(currentParams, previousParams[[x]])) {
 
-        toComputeAuto[[x]] <- FALSE
-      print(paste0("else after, ", toComputeAuto[[x]]))
+          # Fit the model with the current parameters
+          fitResults[[x]] <- fit_garch(model = x,
+                                       p = input[[idP]],
+                                       q = input[[idQ]],
+                                       ar = input[[idAR]],
+                                       ma = input[[idMA]],
+                                       dist = input[[idDist]],
+                                       data = stockInfo()$returns(),
+                                       info = FALSE)
 
-      }
-    }) #end lapply
+          previousParams[[x]] <- currentParams
+          print(paste0("fitted model: ", x))
+        }
 
-    }) #end observe
+        req(fitResults[[x]])
 
+        output[[make_id(x,"results")]] <- renderPrint(fitResults[[x]])
 
-
-
+      }) # end lapply
+    }) # end observe
   })
 }

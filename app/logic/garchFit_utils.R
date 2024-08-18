@@ -1,5 +1,5 @@
 box::use(
-  shiny[ incProgress,withProgress, selectizeInput, tags, checkboxGroupInput,checkboxInput, conditionalPanel, numericInput],
+  shiny[verbatimTextOutput, incProgress,withProgress, selectizeInput, tags, checkboxGroupInput,checkboxInput, conditionalPanel, numericInput],
   bslib[card, card_header, card_body, layout_column_wrap, navset_underline, nav_panel],
   bsicons[bs_icon],
   data.table[data.table],
@@ -43,7 +43,7 @@ model_switch <- function(model) {
 }
 
 #' @export
-fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data) {
+fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data, info = T) {
   model_name <- model_switch(model)
 
   spec <- ugarchspec(
@@ -56,7 +56,7 @@ fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data) {
 
   # Extract AIC and BIC
   ic <- infocriteria(fit)
-  return(ic)
+  if (info) return(ic) else return(fit)
 }
 
 
@@ -227,7 +227,7 @@ model_body <- function(ns, model){
    nav_panel("Results",
              tags$div(
                tags$p("results body subtitle", style = paste(in_card_subtitle_style,"font-size: 0.9rem;padding-top: 15px")),
-               tags$div("body")
+               verbatimTextOutput(outputId = ns(make_id(model, "results")))
              )
              )
   )
