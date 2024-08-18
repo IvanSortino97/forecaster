@@ -148,10 +148,10 @@ server <- function(id, stockInfo) {
 
           # Fit the model with the current parameters
           fitResults[[x]] <- fit_garch(model = x,
-                                       p = input[[idP]],
-                                       q = input[[idQ]],
-                                       ar = input[[idAR]],
-                                       ma = input[[idMA]],
+                                       p = not_null(input[[idP]], 1),
+                                       q = not_null(input[[idQ]], 1),
+                                       ar = not_null(input[[idAR]]),
+                                       ma = not_null(input[[idMA]]),
                                        dist = input[[idDist]],
                                        data = stockInfo()$returns(),
                                        info = FALSE)

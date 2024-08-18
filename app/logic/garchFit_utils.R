@@ -211,16 +211,16 @@ model_body <- function(ns, model){
              tags$p("GARCH Order", style = paste(in_card_subtitle_style,"font-size: 0.9rem;")),
              tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
              numericInput(inputId = ns(make_id(model,"p")),
-                          label = NULL, value = 1),
+                          label = NULL, value = 1, min = 0),
              numericInput(inputId = ns(make_id(model,"q")),
-                          label = NULL, value = 1)
+                          label = NULL, value = 1, min = 0)
              ),
              tags$p("ARMA Order", style = paste(in_card_subtitle_style,"font-size: 0.9rem")),
              tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
              numericInput(inputId = ns(make_id(model,"ar")),
-                          label = NULL, value = 0),
+                          label = NULL, value = 0, min = 0),
              numericInput(inputId = ns(make_id(model,"ma")),
-                          label = NULL, value = 0)),
+                          label = NULL, value = 0, min = 0)),
              checkboxInput(inputId = ns(make_id(model, "includeMean")), value = FALSE, label = "Include mean")
              )
             ),
@@ -287,4 +287,9 @@ make_autoTable <- function(dt, best_fit_index, criteria) {
       BIC = colDef(width = 120, align = "right")
     )
     )
+}
+
+#' @export
+not_null <- function(param, default = 0){
+  if(!is.na(param)) return(param) else return(default)
 }
