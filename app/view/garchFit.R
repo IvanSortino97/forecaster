@@ -173,7 +173,13 @@ server <- function(id, stockInfo) {
 
         req(fitResults[[x]])
 
+        output[[make_id(x,"cvdTable")]] <- renderReactable(makeCvdTable(fitResults[[x]]))
+        output[[make_id(x,"opTable")]] <- renderReactable(makeOpRseTable(fitResults[[x]], "op"))
+        output[[make_id(x,"rseTable")]] <- renderReactable(makeOpRseTable(fitResults[[x]], "rse"))
         output[[make_id(x,"results")]] <- renderPrint(fitResults[[x]])
+
+
+
 
       }) # end lapply
     }) # end observe

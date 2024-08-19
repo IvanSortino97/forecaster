@@ -1,8 +1,8 @@
 box::use(
-  shiny[verbatimTextOutput, incProgress,withProgress, selectizeInput, tags, checkboxGroupInput,checkboxInput, conditionalPanel, numericInput],
+  shiny[verbatimTextOutput,actionButton, incProgress,withProgress, selectizeInput, tags, checkboxGroupInput,checkboxInput, conditionalPanel, numericInput],
   bslib[card, card_header, card_body, layout_column_wrap, navset_underline, nav_panel],
   bsicons[bs_icon],
-  data.table[data.table],
+  data.table[data.table, as.data.table],
   reactable[reactableOutput, reactable, colDef, reactableTheme],
   htmlwidgets[JS],
   shinyWidgets[switchInput],
@@ -189,6 +189,8 @@ conditional_model <- function(ns , model){
   )
 }
 
+body_subtitle <- function(text, additional_style = "") tags$p(text, style = paste(in_card_subtitle_style,paste0("font-size: 0.9rem;",additional_style)))
+
 #' @export
 model_body <- function(ns, model){
 
@@ -203,19 +205,19 @@ model_body <- function(ns, model){
                               )
              ),
 
-    tags$div(tags$p("Distribution", style = paste(in_card_subtitle_style,"font-size: 0.9rem;padding-top: 15px")),
+    tags$div(body_subtitle("Distribution","padding-top: 15px"),
              tags$div(style = "width: 50%;", class = "model-param",
              selectizeInput(inputId = ns(make_id(model,"dist")),
                             label = NULL, width = "100%",
                             choices = distributions)),
-             tags$p("GARCH Order", style = paste(in_card_subtitle_style,"font-size: 0.9rem;")),
+             body_subtitle("GARCH Order"),
              tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
              numericInput(inputId = ns(make_id(model,"p")),
                           label = NULL, value = 1, min = 0),
              numericInput(inputId = ns(make_id(model,"q")),
                           label = NULL, value = 1, min = 0)
              ),
-             tags$p("ARMA Order", style = paste(in_card_subtitle_style,"font-size: 0.9rem")),
+             body_subtitle("ARMA Order"),
              tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
              numericInput(inputId = ns(make_id(model,"ar")),
                           label = NULL, value = 0, min = 0),
@@ -226,12 +228,41 @@ model_body <- function(ns, model){
             ),
    nav_panel("Results",
              tags$div(
-               tags$p("results body subtitle", style = paste(in_card_subtitle_style,"font-size: 0.9rem;padding-top: 15px")),
-               verbatimTextOutput(outputId = ns(make_id(model, "results")))
+
+               body_subtitle("Conditional Variance Dynamics:", "padding-top: 15px"),
+               reactableOutput(outputId = ns(make_id(model, "cvdTable"))),
+               body_subtitle("Optimal Parameters:", "padding-top: 15px"),
+               reactableOutput(outputId = ns(make_id(model, "opTable"))),
+               body_subtitle("Robust Standard Errors:", "padding-top: 15px"),
+               reactableOutput(outputId = ns(make_id(model, "rseTable"))),
+               tags$div(
+                 style = "padding: 30px 15px 15px; text-align: center;",
+                 switchInput(
+                   inputId = ns(make_id(model, "rawFitSwitch")),
+                   labelWidth = "100%",
+                   size = "mini",
+                   inline = TRUE,
+                   value = FALSE,
+                   label = "Show raw fit results",
+                   onLabel = "✓",
+                   offLabel = "✕",
+                   width = "auto"
+                 )
+               ),
+
+               conditionalPanel(
+                 ns = ns,
+                 condition = sprintf("input.%s === true", make_id(model, "rawFitSwitch")),
+                 tags$div(style = "padding-top: 10px; padding-bottom: 10px; height: 300px; overflow: auto;",
+                          verbatimTextOutput(outputId = ns(
+                            make_id(model, "results")
+                          )))
+               )
              )
              )
   )
 }
+
 
 #' @export
 get_param <- function(best_fit, criteria){
@@ -326,4 +357,78 @@ make_autoTable <- function(dt, best_fit_index, criteria) {
 #' @export
 not_null <- function(param, default = 0){
   if(!is.na(param)) return(param) else return(default)
+}
+
+
+#' @export
+makeCvdTable <- function(fit){
+
+  garch_model = sprintf("%s(%s,%s)",
+                        fit@model[["modeldesc"]][["vmodel"]],
+                        fit@model[["modelinc"]][["alpha"]],
+                        fit@model[["modelinc"]][["beta"]])
+
+  mean_model = sprintf("ARFIMA(%s,%s,0)",
+                       fit@model[["modelinc"]][["ar"]],
+                       fit@model[["modelinc"]][["ma"]])
+
+  distribution = fit@model[["modeldesc"]][["distribution"]]
+
+  reactable(data.table(name = c("GARCH Model","Mean Model", "Distribution"),
+                       value = c(garch_model,mean_model,distribution)),
+
+            columns = list(
+              name = colDef(
+                style = list(
+                  textAlign = "left",
+                  fontSize = "0.8rem",
+                  fontWeight = "600",
+                  lineHeight = "1.375rem"
+                )
+              ),
+              value = colDef(
+                style = list(
+                  textAlign = "right",
+                  fontSize = "0.8rem"
+                )
+              )),
+            compact = TRUE,
+            theme = reactableTheme(
+              headerStyle = list(display = "none"),
+              cellPadding = "4px 8px"
+            )
+            )
+}
+
+#' @export
+makeOpRseTable <- function(fit, type) {
+
+  matrix <- if(type == "op") fit@fit$matcoef else fit@fit$robust.matcoef
+
+  table <- cbind(data.table(name = rownames(matrix), as.data.table(matrix)))
+
+
+  reactable(table,
+            compact = TRUE,
+            defaultColDef = colDef(
+              style = list(
+                textAlign = "right",
+                fontSize = "0.8rem"
+              ),
+              cell = function(value) if(is.numeric(value)) round(value,6) else value ),
+            columns = list(
+              name = colDef(
+                header = function(value) gsub("name", "", value),
+                style = list(
+                  textAlign = "left",
+                  fontSize = "0.8rem",
+                  fontWeight = "600"
+                  )
+              )),
+            theme = reactableTheme(
+              headerStyle = list(
+                fontSize = "0.8rem"
+              )
+            )
+  )
 }
