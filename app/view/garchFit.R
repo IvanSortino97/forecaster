@@ -58,6 +58,11 @@ server <- function(id, stockInfo) {
     hide("conditionalPanel")
     observeEvent(stockInfo()$data_xts(), {
       select_stock_condition(stockInfo()$data_xts())
+
+      # If ticker changes, reset models and refit
+      toComputeAuto <<- reactiveValues()
+      previousParams <<- reactiveValues()
+      fitResults <<- reactiveValues()
     })
 
     toComputeAuto <- reactiveValues()
@@ -66,6 +71,7 @@ server <- function(id, stockInfo) {
 
     observe({
       req(stockInfo()$returns(), is_page("garchFit"))
+
 
       # Iterate over the models in the checkbox input
       lapply(input$modelCheckbox, function(x) {
@@ -162,7 +168,7 @@ server <- function(id, stockInfo) {
                                        info = FALSE)
 
           previousParams[[x]] <- currentParams
-          print(paste0("fitted model: ", x))
+          print(paste0(stockInfo()$ticker(), " - fitted model: ", x))
         }
 
         req(fitResults[[x]])

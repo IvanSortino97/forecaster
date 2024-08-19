@@ -3,7 +3,7 @@ box::use(
   bslib[card, card_header, card_body, layout_column_wrap, navset_underline, nav_panel],
   bsicons[bs_icon],
   data.table[data.table],
-  reactable[reactableOutput, reactable, colDef],
+  reactable[reactableOutput, reactable, colDef, reactableTheme],
   htmlwidgets[JS],
   shinyWidgets[switchInput],
   stringr[str_pad],
@@ -254,40 +254,74 @@ get_param <- function(best_fit, criteria){
 #' @export
 make_autoTable <- function(dt, best_fit_index, criteria) {
 
+
+  # Extract the best fit group
   best_fit_group <- dt[best_fit_index, "Distribution"]
+  best_fit <- dt[best_fit_index,]
+
+  dt <- dt[,1:4]
+  unique_dt <- unique(dt[, "Distribution", drop = FALSE])
+
+  best_fit_group_index <- which(unique_dt$Distribution == best_fit_group$Distribution)
 
   reactable(
-    dt[, 1:4], # Display the first four columns
-    groupBy = "Distribution",
-    compact = TRUE,
-    defaultColDef = colDef(
-      style = function(value) {
-        color <- if (value == "error") "red" else "black"
-        list(fontSize = "0.8rem", color = color)
-      },
-      headerStyle = list(
-        fontSize = "0.8rem"
-      )
+    unique_dt,
+    compact = T,
+    highlight = TRUE,
+    theme = reactableTheme(
+      headerStyle = list(display = "none")
     ),
+    details = function(index){
+      selected_distribution <- unique_dt$Distribution[index]
+      dist_data <- dt[dt$Distribution == selected_distribution, ]
+      best_fit_in_dist_data <- which(
+        apply(dist_data, 1, function(row) all(row == best_fit[,1:4]))
+      )
+
+      tags$div(style = "padding: 1rem",
+               reactable(dist_data,
+                         outlined = T,
+                         compact = T,
+                         defaultColDef = colDef(
+                               style = function(value) {
+                                 color <- if (value == "error") "red" else "black"
+                                 list(fontSize = "0.8rem", color = color)
+                               },
+                               headerStyle = list(
+                                 fontSize = "0.8rem"
+                               )
+                             ),
+                           rowStyle = function(index) {
+                             if (length(best_fit_in_dist_data) > 0 && index == best_fit_in_dist_data) {
+                               list(backgroundColor = "#FFFFCC", fontWeight = "bold")
+                             }
+                           },
+                           columns = list(
+                             Distribution = colDef(
+                               width = 150,
+                               style = list(
+                                 whiteSpace = "nowrap",
+                                 fontSize = "0.8rem"
+                               )
+                             ),
+                             Parameters = colDef(align = "right"),
+                             AIC = colDef(width = 120, align = "right"),
+                             BIC = colDef(width = 120, align = "right")
+                           )
+                         )
+               )
+
+    },
     rowStyle = function(index) {
-      if (index == best_fit_index) {
+      if (index == best_fit_group_index) {
         list(backgroundColor = "#FFFFCC", fontWeight = "bold")
       }
-    },
-    columns = list(
-      Distribution = colDef(
-        width = 200,
-        style = list(
-          whiteSpace = "nowrap",
-          fontSize = "0.8rem"
-        )
-      ),
-      Parameters = colDef(align = "right"),
-      AIC = colDef(width = 120, align = "right"),
-      BIC = colDef(width = 120, align = "right")
-    )
-    )
-}
+    }
+  )
+
+  }
+
+
 
 #' @export
 not_null <- function(param, default = 0){
