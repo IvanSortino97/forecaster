@@ -89,6 +89,7 @@ server <- function(id, stockInfo) {
         # Get current parameters
         currentParams <- list(
           dist = input[[idDist]],
+          submodel = input[[make_id(x,"submodel")]],
           p = input[[idP]],
           q = input[[idQ]],
           ar = input[[idAR]],
@@ -111,7 +112,7 @@ server <- function(id, stockInfo) {
         # Check if the switch is TRUE and the computation hasn't been done yet
         if (input[[idSwitch]] && is.null(toComputeAuto[[x]])) {
 
-          best_fit <- get_best_fit(model = x, stockInfo()$returns())
+          best_fit <- get_best_fit(model = x, stockInfo()$returns(), input = input)
           criteria <- "AIC"
           param <- get_param(best_fit, criteria)
 
@@ -166,7 +167,9 @@ server <- function(id, stockInfo) {
                                        dist = input[[idDist]],
                                        data = stockInfo()$returns(),
                                        mean = input[[idMean]],
-                                       info = FALSE)
+                                       info = FALSE,
+                                       submodel = if(x == "FIGARCH") input[[make_id(x,"submodel")]]
+                                       )
 
           previousParams[[x]] <- currentParams
           print(paste0(stockInfo()$ticker(), " - fitted model: ", x))

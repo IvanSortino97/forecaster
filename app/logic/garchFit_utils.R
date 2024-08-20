@@ -42,12 +42,22 @@ model_switch <- function(model) {
   )
 }
 
+distributions = c("Normal" = "norm",
+                  "Student-t" = "std",
+                  "Skewed Normal" = "snorm",
+                  "Skewed Student-t" = "sstd")
+
+submodels = c("GARCH", "TGARCH", "AVGARCH", "NGARCH", "NAGARCH", "APARCH","GJRGARCH", "ALLGARCH")
+
 #' @export
-fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data, info = T, mean = T) {
+fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data, info = T, mean = T, submodel = NULL) {
+
   model_name <- model_switch(model)
 
   spec <- ugarchspec(
-    variance.model = list(model = model_name, garchOrder = c(p, q)),
+    variance.model = list(model = model_name,
+                          garchOrder = c(p, q),
+                          submodel = submodel),
     mean.model = list(armaOrder = c(ar, ma), include.mean = mean),
     distribution.model = dist  # Distribution model
   )
@@ -61,13 +71,9 @@ fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data, info = T, mean = 
 
 
 
-distributions = c("Normal" = "norm",
-                  "Student-t" = "std",
-                  "Skewed Normal" = "snorm",
-                  "Skewed Student-t" = "sstd")
 
 #' @export
-get_best_fit <- function(model, returns){
+get_best_fit <- function(model, returns, input){
 
   results <- list()
   distributions_combinations <- expand.grid(p = 1:3,
@@ -91,8 +97,7 @@ get_best_fit <- function(model, returns){
         incProgress(amount = 1/len,
                     detail = sprintf("GARCH (%s,%s) ARMA (%s,%s) [%s]",
                                       p, q, ar, ma, dist))
-
-        ic <- tryCatch( fit_garch(model, p, q, ar, ma, dist, returns),
+        ic <- tryCatch( fit_garch(model, p, q, ar, ma, dist, returns, submodel = if(model == "FIGARCH") input[[make_id(model,"submodel")]]),
                         error = function(e){
                           list("error","error")
                         })
@@ -206,19 +211,29 @@ model_body <- function(ns, model){
                               )
              ),
 
-    tags$div(body_subtitle("Distribution","padding-top: 15px"),
-             tags$div(style = "width: 50%;", class = "model-param",
-             selectizeInput(inputId = ns(make_id(model,"dist")),
-                            label = NULL, width = "100%",
-                            choices = distributions)),
-             body_subtitle("GARCH Order"),
+    tags$div(
+          body_subtitle("Distribution","padding-top: 15px"),
+          tags$div(style = "width: 50%;", class = "model-param",
+                   selectizeInput(inputId = ns(make_id(model,"dist")),
+                                  label = NULL, width = "100%",
+                                  choices = distributions)),
+
+          if(model == "FIGARCH"){tags$div(
+          body_subtitle("fGARCH submodel"),
+            tags$div(style = "width: 50%;", class = "model-param",
+            selectizeInput(inputId = ns(make_id(model,"submodel")),
+                           label = NULL, width = "100%",
+                           choices = submodels)))},
+
+          body_subtitle("GARCH Order"),
              tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
              numericInput(inputId = ns(make_id(model,"p")),
                           label = NULL, value = 1, min = 0),
              numericInput(inputId = ns(make_id(model,"q")),
                           label = NULL, value = 1, min = 0)
              ),
-             body_subtitle("ARMA Order"),
+
+          body_subtitle("ARMA Order"),
              tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
              numericInput(inputId = ns(make_id(model,"ar")),
                           label = NULL, value = 0, min = 0),
@@ -230,11 +245,13 @@ model_body <- function(ns, model){
    nav_panel("Results",
              tags$div(
 
-               body_subtitle("Conditional Variance Dynamics:", "padding-top: 15px"),
+             body_subtitle("Conditional Variance Dynamics:", "padding-top: 15px"),
                pad_reactable(outputId = ns(make_id(model, "cvdTable"))),
-               body_subtitle("Optimal Parameters:", "padding-top: 15px"),
+
+             body_subtitle("Optimal Parameters:", "padding-top: 15px"),
                pad_reactable(outputId = ns(make_id(model, "opTable"))),
-               body_subtitle("Robust Standard Errors:", "padding-top: 15px"),
+
+             body_subtitle("Robust Standard Errors:", "padding-top: 15px"),
                pad_reactable(outputId = ns(make_id(model, "rseTable"))),
                tags$div(
                  style = "padding: 30px 15px 15px; text-align: center;",
@@ -370,7 +387,9 @@ make_autoTable <- function(dt, best_fit_index, criteria) {
     },
     rowStyle = function(index) {
       if (index == best_fit_group_index) {
-        list(backgroundColor = "#FFFFCC", fontWeight = "bold")
+        list(backgroundColor = "#FFFFCC",
+             fontWeight = "bold",
+             fontSize = "0.8rem")
       }
     }
   )
