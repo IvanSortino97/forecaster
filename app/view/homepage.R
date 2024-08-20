@@ -12,7 +12,8 @@ page_links <- list(
   list(title = "Home", page = "/"),
   list(title = "Stock Selection", page = "stockInfo"),
   list(title = "Stock Analysis", page = "stockAnalysis"),
-  list(title = "Fit model", page = "garchFit")
+  list(title = "Fit model", page = "garchFit"),
+  list(title = "Backtest model", page = "garchBacktest")
 )
 
 #' @export

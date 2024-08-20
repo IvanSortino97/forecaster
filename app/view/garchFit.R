@@ -186,5 +186,13 @@ server <- function(id, stockInfo) {
 
       }) # end lapply
     }) # end observe
+
+    return(
+      list(
+        selectedModels = reactive(input$modelCheckbox),
+        fitResults = reactive(fitResults)
+      )
+    )
+
   })
 }

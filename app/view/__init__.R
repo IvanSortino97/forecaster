@@ -10,4 +10,5 @@ box::use(
   app/view/stockAnalysis,
 
   app/view/garchFit,
+  app/view/garchBacktest,
 )

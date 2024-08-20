@@ -52,6 +52,11 @@ sidebar_component <- function(idSd) {
           title = "Fit Models",
           page = "garchFit",
           icon = "list-check"
+        ),
+       accordion_section(
+          title = "Backtest Models",
+          page = "garchBacktest",
+          icon = "list-check"
         )
       ),
     )

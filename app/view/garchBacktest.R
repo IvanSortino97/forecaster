@@ -15,20 +15,20 @@ ui <- function(id) {
 
   conditional_page_fillable(ns = ns,
 
-      title = "New Module",
-      subtitle = "Subtitle",
-      body = div(
-        "div content"
-      )
+                            title = "New Module",
+                            subtitle = "Subtitle",
+                            body = div(
+                              "div content"
+                            )
   )
 }
 
 #' @export
-server <- function(id, stockInfo) {
+server <- function(id, stockInfo, garchFit) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    #spinner <- make_spinner("titleLoader")
+    spinner <- make_spinner("titleLoader")
 
     hide("conditionalPanel")
     observeEvent(stockInfo()$data_xts() , {

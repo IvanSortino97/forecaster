@@ -1,5 +1,5 @@
 box::use(shiny[observe, reactive, reactiveVal, moduleServer, NS, tags, renderText, req],
-         bslib[..., page_sidebar, page_fillable],
+         bslib[..., page_sidebar, page_fillable], # do not remove "..."
          shinybrowser[get_device, detect],
          shinyjs[useShinyjs],
          shinytoastr[toastr_warning, useToastr],
@@ -29,7 +29,8 @@ ui <- function(id) {
       route("stockInfo", stockInfo$ui(ns("stockInfo"))),
       route("stockAnalysis", stockAnalysis$ui(ns("stockAnalysis"))),
 
-      route("garchFit", garchFit$ui(ns("garchFit")))
+      route("garchFit", garchFit$ui(ns("garchFit"))),
+      route("garchBacktest", garchBacktest$ui(ns("garchBacktest")))
     ))
   )
 
@@ -48,7 +49,8 @@ server <- function(id) {
     op_stockInfo <- stockInfo$server("stockInfo")
     stockAnalysis$server("stockAnalysis", reactive(op_stockInfo))
 
-    garchFit$server("garchFit", reactive(op_stockInfo))
+    op_garchFit <- garchFit$server("garchFit", reactive(op_stockInfo))
+    garchBacktest$server("garchBacktest", reactive(op_stockInfo), reactive(op_garchFit))
 
 
     # -------------------------------------------------------------------------
