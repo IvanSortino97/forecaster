@@ -1,5 +1,5 @@
 box::use(
-  shiny[verbatimTextOutput,actionButton, incProgress,withProgress, selectizeInput, tags, checkboxGroupInput,checkboxInput, conditionalPanel, numericInput],
+  shiny[plotOutput, verbatimTextOutput, incProgress,withProgress, selectizeInput, tags, checkboxGroupInput,checkboxInput, conditionalPanel, numericInput],
   bslib[card, card_header, card_body, layout_column_wrap, navset_underline, nav_panel],
   bsicons[bs_icon],
   data.table[data.table, as.data.table],
@@ -190,6 +190,7 @@ conditional_model <- function(ns , model){
 }
 
 body_subtitle <- function(text, additional_style = "") tags$p(text, style = paste(in_card_subtitle_style,paste0("font-size: 0.9rem;",additional_style)))
+pad_reactable <- function(outputId) tags$div(style = "padding: 0 10px;", reactableOutput(outputId = outputId) )
 
 #' @export
 model_body <- function(ns, model){
@@ -230,11 +231,11 @@ model_body <- function(ns, model){
              tags$div(
 
                body_subtitle("Conditional Variance Dynamics:", "padding-top: 15px"),
-               reactableOutput(outputId = ns(make_id(model, "cvdTable"))),
+               pad_reactable(outputId = ns(make_id(model, "cvdTable"))),
                body_subtitle("Optimal Parameters:", "padding-top: 15px"),
-               reactableOutput(outputId = ns(make_id(model, "opTable"))),
+               pad_reactable(outputId = ns(make_id(model, "opTable"))),
                body_subtitle("Robust Standard Errors:", "padding-top: 15px"),
-               reactableOutput(outputId = ns(make_id(model, "rseTable"))),
+               pad_reactable(outputId = ns(make_id(model, "rseTable"))),
                tags$div(
                  style = "padding: 30px 15px 15px; text-align: center;",
                  switchInput(
@@ -259,7 +260,31 @@ model_body <- function(ns, model){
                           )))
                )
              )
-             )
+             ),
+   nav_panel("Plots",
+             tags$div(style = "padding: 0 10px;",
+               selectizeInput(
+                 inputId = ns(make_id(model, "selectPlot")),
+                 label = "Select plot",
+                 selected = 2,
+                 width = "100%",
+                 choices = list(
+                   "Series with 2 Conditional SD Superimposed" = 1,
+                   "Series with 1% VaR Limits" = 2,
+                   "Conditional SD (vs |returns|)" = 3,
+                   "ACF of Observations" = 4,
+                   "ACF of Squared Observations" = 5,
+                   "ACF of Absolute Observations" = 6,
+                   "Cross-Correlations of Squared vs Actual Observations" = 7,
+                   "Empirical Density of Standardized Residuals" = 8,
+                   "norm - QQ Plot" = 9,
+                   "ACF of Standardized Residuals" = 10,
+                   "ACF of Squared Standardized Residuals" = 11,
+                   "New Impact Curve" = 12
+                 )
+               ),
+               plotOutput(ns(make_id(model,"fitPlot")))
+             ))
   )
 }
 
@@ -374,6 +399,7 @@ makeCvdTable <- function(fit){
 
   distribution = fit@model[["modeldesc"]][["distribution"]]
 
+
   reactable(data.table(name = c("GARCH Model","Mean Model", "Distribution"),
                        value = c(garch_model,mean_model,distribution)),
 
@@ -398,6 +424,7 @@ makeCvdTable <- function(fit){
               cellPadding = "4px 8px"
             )
             )
+
 }
 
 #' @export
@@ -407,9 +434,9 @@ makeOpRseTable <- function(fit, type) {
 
   table <- cbind(data.table(name = rownames(matrix), as.data.table(matrix)))
 
-
   reactable(table,
             compact = TRUE,
+            pagination = FALSE,
             defaultColDef = colDef(
               style = list(
                 textAlign = "right",

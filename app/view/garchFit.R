@@ -1,10 +1,11 @@
 # app/view/
 
 box::use(
-  shiny[..., conditionalPanel, observeEvent, reactiveVal, checkboxGroupInput, div, moduleServer, NS],
+  shiny[...,renderPlot, renderPrint, conditionalPanel, observeEvent, reactiveVal, checkboxGroupInput, div, moduleServer, NS],
   bslib[page_fillable, card, card_header, card_body, card_title],
   shinyjs[show, hide, disable, enable],
   reactable[reactable, renderReactable, colDef],
+  rugarch[plot],
   shiny.router[is_page],
 )
 box::use(
@@ -177,9 +178,8 @@ server <- function(id, stockInfo) {
         output[[make_id(x,"opTable")]] <- renderReactable(makeOpRseTable(fitResults[[x]], "op"))
         output[[make_id(x,"rseTable")]] <- renderReactable(makeOpRseTable(fitResults[[x]], "rse"))
         output[[make_id(x,"results")]] <- renderPrint(fitResults[[x]])
-
-
-
+        output[[make_id(x,"fitPlot")]] <- renderPlot(plot(fitResults[[x]],
+                                                          which = as.numeric(input[[make_id(x,"selectPlot")]])))
 
       }) # end lapply
     }) # end observe
