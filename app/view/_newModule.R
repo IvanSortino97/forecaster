@@ -5,7 +5,7 @@ box::use(
   bslib[page_fillable, card, card_header, card_body, card_title]
 )
 box::use(
-  app / logic / general_utils[title, subtitle, make_spinner, no_stock_message],
+  app / logic / general_utils[title, subtitle, make_spinner, condition_message],
 )
 
 #' @export

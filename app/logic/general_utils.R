@@ -125,16 +125,25 @@ page_footer <- function(hrefPagePrecedent = NULL, hrefPageNext = NULL, textPageP
 }
 
 #' @export
-no_stock_message <- function() {
+condition_message <- function(page) {
+
+  if(page == "stockInfo"){
+    message = "Please select a stock before proceeding."
+    buttonMessage = 'Stock Selection'
+  }
+  if(page == "garchFit"){
+    message = "Please fit a model before proceeding."
+    buttonMessage = 'Fit Models'
+  }
 
   tags$div(style = "padding-top: 20px;",
            tags$div(
              class = "alert alert-warning mt-3 text-center",
              tags$h6(class = "alert-heading",
-                     "Please select a stock before proceeding."),
+                     message),
              tags$a(
-               'Go to ', tags$strong('Stock Selection'),
-               href = route_link("stockInfo"),
+               'Go to ', tags$strong(buttonMessage),
+               href = route_link(page),
                class = "btn btn-light btn-sm mt-2",
                style = "border: 1px solid #ccc;"
              )
@@ -142,7 +151,7 @@ no_stock_message <- function() {
 }
 
 #' @export
-select_stock_condition <- function(data, id_message = "conditionalMessage", id_conditional = "conditionalPanel"){
+select_condition <- function(data, id_message = "conditionalMessage", id_conditional = "conditionalPanel"){
 
   if (!is.null(data)) {
     show(id_conditional)
@@ -167,6 +176,7 @@ make_spinner <- function(id, type = "facebook"){ addLoader$new(
 #' @export
 conditional_page_fillable <- function(title,
                                       subtitle,
+                                      condition_page = "stockInfo",
                                       idLoader = "titleLoader",
                                       idMessage = "conditionalMessage",
                                       idPanel = "conditionalPanel",
@@ -177,7 +187,7 @@ conditional_page_fillable <- function(title,
   page_fillable(
     title(title, id = ns(idLoader)),
     subtitle(subtitle),
-    tags$div(id = ns(idMessage), no_stock_message()),
+    tags$div(id = ns(idMessage), condition_message(condition_page)),
     tags$div(id = ns(idPanel), body)
   )
 }

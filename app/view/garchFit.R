@@ -9,7 +9,7 @@ box::use(
   shiny.router[is_page],
 )
 box::use(
-  app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, select_stock_condition],
+  app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, select_condition],
   app / logic / garchFit_utils[...]
 )
 
@@ -58,7 +58,7 @@ server <- function(id, stockInfo) {
 
     hide("conditionalPanel")
     observeEvent(stockInfo()$data_xts(), {
-      select_stock_condition(stockInfo()$data_xts())
+      select_condition(stockInfo()$data_xts())
 
       # If ticker changes, reset models and refit
       toComputeAuto <<- reactiveValues()

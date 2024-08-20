@@ -6,7 +6,7 @@ box::use(
   shinyjs[hide],
 )
 box::use(
-  app / logic / general_utils[conditional_page_fillable, make_spinner, select_stock_condition],
+  app / logic / general_utils[conditional_page_fillable, make_spinner, select_condition],
 )
 
 #' @export
@@ -17,6 +17,7 @@ ui <- function(id) {
 
       title = "New Module",
       subtitle = "Subtitle",
+      #condition_page = "stockInfo",
       body = div(
         "div content"
       )
@@ -32,7 +33,7 @@ server <- function(id, stockInfo) {
 
     hide("conditionalPanel")
     observeEvent(stockInfo()$data_xts() , {
-      select_stock_condition(stockInfo()$data_xts())})
+      select_condition(stockInfo()$data_xts())})
 
   })
 }

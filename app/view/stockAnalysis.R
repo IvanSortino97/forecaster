@@ -12,7 +12,7 @@ box::use(
   shinybrowser[get_device],
 )
 box::use(
-  app / logic / general_utils[make_spinner, conditional_page_fillable, page_footer, select_stock_condition ],
+  app / logic / general_utils[make_spinner, conditional_page_fillable, page_footer, select_condition ],
   app / logic / stockAnalysis_utils[get_returns,get_lag,
                                     make_analysis_plots, make_price_table, make_cf_plot,
                                     make_box_table, make_jb_table, make_adf_table, make_t_table, make_arch_table,
@@ -139,7 +139,7 @@ server <- function(id, stockInfo) {
 
     hide("conditionalPanel")
     observeEvent(stockInfo()$data_xts(), {
-      select_stock_condition(stockInfo()$data_xts())})
+      select_condition(stockInfo()$data_xts())})
 
     once <- reactiveVal(T)
     r <- reactiveValues()
