@@ -1,4 +1,4 @@
-box::use(shiny[ img, tags, HTML, shinyOptions, getShinyOption, onSessionEnded, textOutput, withProgress],
+box::use(shiny[reactiveValuesToList, img, tags, HTML, shinyOptions, getShinyOption, onSessionEnded, textOutput, withProgress],
          shiny.router[route_link],
          shinyjs[hide, show],
          shinytoastr[toastr_error, toastr_warning],
@@ -151,16 +151,30 @@ condition_message <- function(page) {
 }
 
 #' @export
-select_condition <- function(data, id_message = "conditionalMessage", id_conditional = "conditionalPanel"){
+show_condition <- function(data, id_message = "conditionalMessage", id_conditional = "conditionalPanel") {
 
+
+  test <- FALSE
+
+  # Check if data is not NULL and is a list with all non-NULL element
   if (!is.null(data)) {
+    if (is.list(data)) {
+      if (all(!sapply(data, is.null))) {
+        test <- TRUE
+      }
+    } else {
+      test <- TRUE
+    }
+  }
+
+  # Show or hide elements based on the test result
+  if (test) {
     show(id_conditional)
     hide(id_message)
   } else {
     hide(id_conditional)
     show(id_message)
   }
-
 }
 
 

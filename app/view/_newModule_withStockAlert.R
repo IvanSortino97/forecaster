@@ -6,7 +6,7 @@ box::use(
   shinyjs[hide],
 )
 box::use(
-  app / logic / general_utils[conditional_page_fillable, make_spinner, select_condition],
+  app / logic / general_utils[conditional_page_fillable, make_spinner, show_condition],
 )
 
 #' @export
@@ -33,7 +33,7 @@ server <- function(id, stockInfo) {
 
     hide("conditionalPanel")
     observeEvent(stockInfo()$data_xts() , {
-      select_condition(stockInfo()$data_xts())})
+      show_condition(stockInfo()$data_xts())})
 
   })
 }

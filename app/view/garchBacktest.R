@@ -1,12 +1,13 @@
 # app/view/
 
 box::use(
-  shiny[div, moduleServer, NS, tags, observeEvent],
+  shiny[... ,reactiveValuesToList,div, moduleServer, NS, tags, observeEvent, observe],
   bslib[page_fillable, card, card_header, card_body, card_title],
   shinyjs[hide],
+  shiny.router[is_page],
 )
 box::use(
-  app / logic / general_utils[conditional_page_fillable, make_spinner, select_condition],
+  app / logic / general_utils[conditional_page_fillable, make_spinner, show_condition],
 )
 
 #' @export
@@ -19,7 +20,8 @@ ui <- function(id) {
                             subtitle = "Subtitle",
                             condition_page = "garchFit",
                             body = div(
-                              "div content"
+                              "div content",
+                              verbatimTextOutput(ns("test"))
                             )
   )
 }
@@ -32,8 +34,16 @@ server <- function(id, stockInfo, garchFit) {
     spinner <- make_spinner("titleLoader")
 
     hide("conditionalPanel")
-    observeEvent(stockInfo()$data_xts() , {
-      select_condition(stockInfo()$data_xts())})
+    observe({
+
+      show_condition(garchFit()$fitResults())
+
+      })
+
+
+    output$test <- renderPrint({
+      garchFit()$selectedModels()
+    })
 
   })
 }

@@ -1,7 +1,7 @@
 # app/view/
 
 box::use(
-  shiny[...,renderPlot, renderPrint, conditionalPanel, observeEvent, reactiveVal, checkboxGroupInput, div, moduleServer, NS],
+  shiny[...,reactiveValuesToList,renderPlot, renderPrint, conditionalPanel, observeEvent, reactiveVal, checkboxGroupInput, div, moduleServer, NS],
   bslib[page_fillable, card, card_header, card_body, card_title],
   shinyjs[show, hide, disable, enable],
   reactable[reactable, renderReactable, colDef],
@@ -9,7 +9,7 @@ box::use(
   shiny.router[is_page],
 )
 box::use(
-  app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, select_condition],
+  app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, show_condition],
   app / logic / garchFit_utils[...]
 )
 
@@ -58,7 +58,7 @@ server <- function(id, stockInfo) {
 
     hide("conditionalPanel")
     observeEvent(stockInfo()$data_xts(), {
-      select_condition(stockInfo()$data_xts())
+      show_condition(stockInfo()$data_xts())
 
       # If ticker changes, reset models and refit
       toComputeAuto <<- reactiveValues()
@@ -175,22 +175,27 @@ server <- function(id, stockInfo) {
           print(paste0(stockInfo()$ticker(), " - fitted model: ", x))
         }
 
-        req(fitResults[[x]])
+        req(fitResults[[x]]$fit)
 
-        output[[make_id(x,"cvdTable")]] <- renderReactable(makeCvdTable(fitResults[[x]]))
-        output[[make_id(x,"opTable")]] <- renderReactable(makeOpRseTable(fitResults[[x]], "op"))
-        output[[make_id(x,"rseTable")]] <- renderReactable(makeOpRseTable(fitResults[[x]], "rse"))
-        output[[make_id(x,"results")]] <- renderPrint(fitResults[[x]])
-        output[[make_id(x,"fitPlot")]] <- renderPlot(plot(fitResults[[x]],
+        output[[make_id(x,"cvdTable")]] <- renderReactable(makeCvdTable(fitResults[[x]]$fit))
+        output[[make_id(x,"opTable")]] <- renderReactable(makeOpRseTable(fitResults[[x]]$fit, "op"))
+        output[[make_id(x,"rseTable")]] <- renderReactable(makeOpRseTable(fitResults[[x]]$fit, "rse"))
+        output[[make_id(x,"results")]] <- renderPrint(fitResults[[x]]$fit)
+        output[[make_id(x,"fitPlot")]] <- renderPlot(plot(fitResults[[x]]$fit,
                                                           which = as.numeric(input[[make_id(x,"selectPlot")]])))
 
       }) # end lapply
+
+      fitOutput(reactiveValuesToList(fitResults))
+
     }) # end observe
+
+    fitOutput <- reactiveVal()
 
     return(
       list(
         selectedModels = reactive(input$modelCheckbox),
-        fitResults = reactive(fitResults)
+        fitResults = reactive(fitOutput())
       )
     )
 

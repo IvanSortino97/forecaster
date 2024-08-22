@@ -66,7 +66,8 @@ fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data, info = T, mean = 
 
   # Extract AIC and BIC
   ic <- infocriteria(fit)
-  if (info) return(ic) else return(fit)
+  if (info) return(ic) else return(list( fit = fit,
+                                         spec = spec))
 }
 
 
