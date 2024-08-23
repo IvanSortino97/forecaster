@@ -7,6 +7,7 @@ box::use(
   reactable[reactable, renderReactable, colDef],
   rugarch[plot],
   shiny.router[is_page],
+  spsComps[addLoader],
 )
 box::use(
   app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, show_condition],
@@ -55,6 +56,9 @@ server <- function(id, stockInfo) {
     ns <- session$ns
 
     spinner <- make_spinner("titleLoader")
+
+    fitSpinners <- lapply(models, function(x) make_spinner(make_id(x, "loader")))
+    names(fitSpinners) <- models
 
     hide("conditionalPanel")
     observeEvent(stockInfo()$data_xts(), {
@@ -112,6 +116,8 @@ server <- function(id, stockInfo) {
         # Check if the switch is TRUE and the computation hasn't been done yet
         if (input[[idSwitch]] && is.null(toComputeAuto[[x]])) {
 
+          fitSpinners[[x]]$show()
+
           best_fit <- get_best_fit(model = x, stockInfo()$returns(), input = input)
           criteria <- "AIC"
           param <- get_param(best_fit, criteria)
@@ -158,6 +164,8 @@ server <- function(id, stockInfo) {
         # Fit the model only if the parameters have changed
         if (!identical(currentParams, previousParams[[x]])) {
 
+          fitSpinners[[x]]$show()
+
           # Fit the model with the current parameters
           fitResults[[x]] <- fit_garch(model = x,
                                        p = not_null(input[[idP]], 1),
@@ -184,7 +192,9 @@ server <- function(id, stockInfo) {
         output[[make_id(x,"fitPlot")]] <- renderPlot(plot(fitResults[[x]]$fit,
                                                           which = as.numeric(input[[make_id(x,"selectPlot")]])))
 
-      }) # end lapply
+        fitSpinners[[x]]$hide()
+
+        }) # end lapply
 
       fitOutput(reactiveValuesToList(fitResults))
 

@@ -47,6 +47,9 @@ distributions = c("Normal" = "norm",
                   "Skewed Normal" = "snorm",
                   "Skewed Student-t" = "sstd")
 
+#' @export
+models = c("GARCH","eGARCH","GJRGARCH","APARCH","IGARCH","FIGARCH")
+
 submodels = c("GARCH", "TGARCH", "AVGARCH", "NGARCH", "NAGARCH", "APARCH","GJRGARCH", "ALLGARCH")
 
 #' @export
@@ -140,8 +143,11 @@ make_id <- function(model, suffix = ""){paste0(sub(" - ","",model), suffix)}
 settings_header <- function(title, model, ns ) {
   card_header(
     tags$div(class = "d-flex justify-content-between align-items-center",
-             tags$div(style = "padding-top: 5px;", title),
-
+             tags$div(class = "d-flex align-items-center",
+                      tags$div(style = "padding-top: 5px;", title),
+                      tags$div(style = "margin-left: 10px; padding-top: 5px; width: 30px; height: 30px;",
+                               id = ns(make_id(model,"loader")))
+             ),
              tags$div(class = "d-flex justify-content-end align-items-center",
                       # Show info icon -> make it a button to hide the parameter table
                       # conditionalPanel(ns = ns,
