@@ -104,7 +104,7 @@ settings_header <- function(title, model, ns ) {
 
 autofitSettings <- function(ns, model){
   popover(
-    bs_icon("gear", title = "Settings", marginTop = "4px", marginRight = "10px"),
+    bs_icon("gear", title = "Settings", marginTop = "3px", marginRight = "10px"),
     title = "Autofit Settings",
     numericInput( ns(make_id(model,"garchRange")), "max GARCH", 3 ),
     numericInput( ns(make_id(model,"armaRange")), "max ARMA", 0 )
@@ -255,13 +255,13 @@ fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data, info = T, mean = 
 
 
 #' @export
-get_best_fit <- function(model, returns, input){
+get_best_fit <- function(model, returns, input , garchRange = 3, armaRange = 0){
 
   results <- list()
-  distributions_combinations <- expand.grid(p = 1:3,
-                                            q = 1:3,
-                                            ar = 0,
-                                            ma = 0,
+  distributions_combinations <- expand.grid(p = 1:garchRange,
+                                            q = 1:garchRange,
+                                            ar = 0:armaRange,
+                                            ma = 0:armaRange,
                                             dist = distributions)
   len <- nrow(distributions_combinations)
 

@@ -106,7 +106,11 @@ server <- function(id, stockInfo) {
 
           fitSpinners[[x]]$show()
 
-          best_fit <- get_best_fit(model = x, stockInfo()$returns(), input = input)
+          best_fit <- get_best_fit(model = x,
+                                   returns = stockInfo()$returns(),
+                                   input = input,
+                                   garchRange = input[[make_id(x,"garchRange")]],
+                                   armaRange = input[[make_id(x,"armaRange")]])
           criteria <- "AIC"
           param <- get_param(best_fit, criteria)
 
