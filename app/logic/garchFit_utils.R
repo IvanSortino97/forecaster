@@ -54,6 +54,181 @@ distributions = c("Normal" = "norm",
                   "Skewed Normal" = "snorm",
                   "Skewed Student-t" = "sstd")
 
+#' @export
+conditional_model <- function(ns , model){
+  conditionalPanel(ns = ns,
+                   condition = sprintf("input.modelCheckbox.includes('%s')",
+                                       make_id(model) ),
+                   parameter_card(
+                     ns = ns,
+                     model = model,
+                     #switchId = ns(paste0(model, "-switch")),
+                     title = paste0(names(models[which(models == model)]), " Model"),
+                     body = model_body(ns = ns,
+                                       model = model)
+                   )
+  )
+}
+
+settings_header <- function(title, model, ns ) {
+  card_header(
+    tags$div(class = "d-flex justify-content-between align-items-center",
+             tags$div(class = "d-flex align-items-center",
+                      tags$div(style = "padding-top: 5px;", title),
+                      tags$div(style = "margin-left: 10px; padding-top: 5px; width: 30px; height: 30px;",
+                               id = ns(make_id(model,"loader")))
+             ),
+             tags$div(class = "d-flex justify-content-end align-items-center",
+                      # Show info icon -> make it a button to hide the parameter table
+                      # conditionalPanel(ns = ns,
+                      #                  condition = sprintf("input.%s === true", make_id(model, "switch")),
+                      #                  bsicons::bs_icon("info")),
+                      switchInput(
+                        inputId = ns(make_id(model,"switch")),
+                        labelWidth = "100%",
+                        size = "mini",
+                        inline = TRUE,
+                        value = FALSE,
+                        label = "auto",
+                        onLabel = "✓",
+                        offLabel = "✕",
+                        width = "auto"
+                      )
+             )
+    ),
+  )
+}
+
+#' @export
+parameter_card <- function(title, model, body, ns) {
+  card(
+    settings_header(title, model, ns),
+    card_body(gap = 0,
+              # conditionalPanel(ns = ns,
+              #                  condition = sprintf("input.%s === true", make_id(model, "switch")),
+              #                  tags$div(style = "padding-top: 10px; padding-bottom: 15px;",
+              #                  reactableOutput(ns(make_id(model, "autoTable")))
+              #                  )
+              # ),
+              body)
+  )
+}
+
+
+body_subtitle <- function(text, additional_style = "") tags$p(text, style = paste(in_card_subtitle_style,paste0("font-size: 0.9rem;",additional_style)))
+pad_reactable <- function(outputId) tags$div(style = "padding: 0 10px;", reactableOutput(outputId = outputId) )
+
+#' @export
+model_body <- function(ns, model){
+
+  navset_underline(header = tags$hr(style = "margin: 0; margin-top: 10px"),
+
+                   nav_panel("Parameters",
+
+                             conditionalPanel(ns = ns,
+                                              condition = sprintf("input.%s === true", make_id(model, "switch")),
+                                              tags$div(style = "padding-top: 10px; padding-bottom: 10px;",
+                                                       reactableOutput(ns(make_id(model, "autoTable")))
+                                              )
+                             ),
+
+                             tags$div(
+                               body_subtitle("Distribution","padding-top: 15px"),
+                               tags$div(style = "width: 50%;", class = "model-param",
+                                        selectizeInput(inputId = ns(make_id(model,"dist")),
+                                                       label = NULL, width = "100%",
+                                                       choices = distributions)),
+
+                               if(model == "FIGARCH"){tags$div(
+                                 body_subtitle("fGARCH submodel"),
+                                 tags$div(style = "width: 50%;", class = "model-param",
+                                          selectizeInput(inputId = ns(make_id(model,"submodel")),
+                                                         label = NULL, width = "100%",
+                                                         choices = submodels)))},
+
+                               body_subtitle("GARCH Order"),
+                               tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
+                                        numericInput(inputId = ns(make_id(model,"p")),
+                                                     label = NULL, value = 1, min = 0),
+                                        numericInput(inputId = ns(make_id(model,"q")),
+                                                     label = NULL, value = 1, min = 0)
+                               ),
+
+                               body_subtitle("ARMA Order"),
+                               tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
+                                        numericInput(inputId = ns(make_id(model,"ar")),
+                                                     label = NULL, value = 0, min = 0),
+                                        numericInput(inputId = ns(make_id(model,"ma")),
+                                                     label = NULL, value = 0, min = 0)),
+                               checkboxInput(inputId = ns(make_id(model, "includeMean")), value = FALSE, label = "Include mean")
+                             )
+                   ),
+                   nav_panel("Results",
+                             tags$div(
+
+                               body_subtitle("Conditional Variance Dynamics:", "padding-top: 15px"),
+                               pad_reactable(outputId = ns(make_id(model, "cvdTable"))),
+
+                               body_subtitle("Optimal Parameters:", "padding-top: 15px"),
+                               pad_reactable(outputId = ns(make_id(model, "opTable"))),
+
+                               body_subtitle("Robust Standard Errors:", "padding-top: 15px"),
+                               pad_reactable(outputId = ns(make_id(model, "rseTable"))),
+                               tags$div(
+                                 style = "padding: 30px 15px 15px; text-align: center;",
+                                 switchInput(
+                                   inputId = ns(make_id(model, "rawFitSwitch")),
+                                   labelWidth = "100%",
+                                   size = "mini",
+                                   inline = TRUE,
+                                   value = FALSE,
+                                   label = "Show raw fit results",
+                                   onLabel = "✓",
+                                   offLabel = "✕",
+                                   width = "auto"
+                                 )
+                               ),
+
+                               conditionalPanel(
+                                 ns = ns,
+                                 condition = sprintf("input.%s === true", make_id(model, "rawFitSwitch")),
+                                 tags$div(style = "padding-top: 10px; padding-bottom: 10px; height: 300px; overflow: auto;",
+                                          verbatimTextOutput(outputId = ns(
+                                            make_id(model, "results")
+                                          )))
+                               )
+                             )
+                   ),
+                   nav_panel("Plots",
+                             tags$div(style = "padding: 0 10px;",
+                                      selectizeInput(
+                                        inputId = ns(make_id(model, "selectPlot")),
+                                        label = "Select plot",
+                                        selected = 2,
+                                        width = "100%",
+                                        choices = list(
+                                          "Series with 2 Conditional SD Superimposed" = 1,
+                                          "Series with 1% VaR Limits" = 2,
+                                          "Conditional SD (vs |returns|)" = 3,
+                                          "ACF of Observations" = 4,
+                                          "ACF of Squared Observations" = 5,
+                                          "ACF of Absolute Observations" = 6,
+                                          "Cross-Correlations of Squared vs Actual Observations" = 7,
+                                          "Empirical Density of Standardized Residuals" = 8,
+                                          "norm - QQ Plot" = 9,
+                                          "ACF of Standardized Residuals" = 10,
+                                          "ACF of Squared Standardized Residuals" = 11,
+                                          "New Impact Curve" = 12
+                                        )
+                                      ),
+                                      tags$div(
+                                        class = "resize_chart",
+                                        plotOutput(ns(make_id(model,"fitPlot")),
+                                                   height = "auto")
+                                      )
+                             ))
+  )
+}
 
 
 #' @export
@@ -117,6 +292,7 @@ get_best_fit <- function(model, returns, input){
   )
 
   results_df <- do.call(rbind, lapply(names(results), function(x) data.table(
+
       Distribution = results[[x]]$dist,
       Parameters = paste(results[[x]]$param, collapse = "_"),
       AIC = results[[x]][[1]][1],
@@ -144,181 +320,6 @@ get_best_fit <- function(model, returns, input){
 #' @export
 make_id <- function(model, suffix = ""){paste0(sub(" - ","",model), suffix)}
 
-settings_header <- function(title, model, ns ) {
-  card_header(
-    tags$div(class = "d-flex justify-content-between align-items-center",
-             tags$div(class = "d-flex align-items-center",
-                      tags$div(style = "padding-top: 5px;", title),
-                      tags$div(style = "margin-left: 10px; padding-top: 5px; width: 30px; height: 30px;",
-                               id = ns(make_id(model,"loader")))
-             ),
-             tags$div(class = "d-flex justify-content-end align-items-center",
-                      # Show info icon -> make it a button to hide the parameter table
-                      # conditionalPanel(ns = ns,
-                      #                  condition = sprintf("input.%s === true", make_id(model, "switch")),
-                      #                  bsicons::bs_icon("info")),
-                      switchInput(
-                        inputId = ns(make_id(model,"switch")),
-                        labelWidth = "100%",
-                        size = "mini",
-                        inline = TRUE,
-                        value = FALSE,
-                        label = "auto",
-                        onLabel = "✓",
-                        offLabel = "✕",
-                        width = "auto"
-                      )
-             )
-    ),
-  )
-}
-
-#' @export
-parameter_card <- function(title, model, body, ns) {
-  card(
-    settings_header(title, model, ns),
-    card_body(gap = 0,
-              # conditionalPanel(ns = ns,
-              #                  condition = sprintf("input.%s === true", make_id(model, "switch")),
-              #                  tags$div(style = "padding-top: 10px; padding-bottom: 15px;",
-              #                  reactableOutput(ns(make_id(model, "autoTable")))
-              #                  )
-              # ),
-              body)
-  )
-}
-
-#' @export
-conditional_model <- function(ns , model){
-
-  conditionalPanel(ns = ns,
-                   condition = sprintf("input.modelCheckbox.includes('%s')",
-                                       make_id(model) ),
-                   parameter_card(
-                     ns = ns,
-                     model = model,
-                     #switchId = ns(paste0(model, "-switch")),
-                     title = paste0(model, " Model"),
-                     body = model_body(ns = ns,
-                                       model = model)
-                   )
-  )
-}
-
-body_subtitle <- function(text, additional_style = "") tags$p(text, style = paste(in_card_subtitle_style,paste0("font-size: 0.9rem;",additional_style)))
-pad_reactable <- function(outputId) tags$div(style = "padding: 0 10px;", reactableOutput(outputId = outputId) )
-
-#' @export
-model_body <- function(ns, model){
-
-  navset_underline(header = tags$hr(style = "margin: 0; margin-top: 10px"),
-
-   nav_panel("Parameters",
-
-             conditionalPanel(ns = ns,
-                              condition = sprintf("input.%s === true", make_id(model, "switch")),
-                              tags$div(style = "padding-top: 10px; padding-bottom: 10px;",
-                                       reactableOutput(ns(make_id(model, "autoTable")))
-                              )
-             ),
-
-    tags$div(
-          body_subtitle("Distribution","padding-top: 15px"),
-          tags$div(style = "width: 50%;", class = "model-param",
-                   selectizeInput(inputId = ns(make_id(model,"dist")),
-                                  label = NULL, width = "100%",
-                                  choices = distributions)),
-
-          if(model == "FIGARCH"){tags$div(
-          body_subtitle("fGARCH submodel"),
-            tags$div(style = "width: 50%;", class = "model-param",
-            selectizeInput(inputId = ns(make_id(model,"submodel")),
-                           label = NULL, width = "100%",
-                           choices = submodels)))},
-
-          body_subtitle("GARCH Order"),
-             tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
-             numericInput(inputId = ns(make_id(model,"p")),
-                          label = NULL, value = 1, min = 0),
-             numericInput(inputId = ns(make_id(model,"q")),
-                          label = NULL, value = 1, min = 0)
-             ),
-
-          body_subtitle("ARMA Order"),
-             tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
-             numericInput(inputId = ns(make_id(model,"ar")),
-                          label = NULL, value = 0, min = 0),
-             numericInput(inputId = ns(make_id(model,"ma")),
-                          label = NULL, value = 0, min = 0)),
-             checkboxInput(inputId = ns(make_id(model, "includeMean")), value = FALSE, label = "Include mean")
-             )
-            ),
-   nav_panel("Results",
-             tags$div(
-
-             body_subtitle("Conditional Variance Dynamics:", "padding-top: 15px"),
-               pad_reactable(outputId = ns(make_id(model, "cvdTable"))),
-
-             body_subtitle("Optimal Parameters:", "padding-top: 15px"),
-               pad_reactable(outputId = ns(make_id(model, "opTable"))),
-
-             body_subtitle("Robust Standard Errors:", "padding-top: 15px"),
-               pad_reactable(outputId = ns(make_id(model, "rseTable"))),
-               tags$div(
-                 style = "padding: 30px 15px 15px; text-align: center;",
-                 switchInput(
-                   inputId = ns(make_id(model, "rawFitSwitch")),
-                   labelWidth = "100%",
-                   size = "mini",
-                   inline = TRUE,
-                   value = FALSE,
-                   label = "Show raw fit results",
-                   onLabel = "✓",
-                   offLabel = "✕",
-                   width = "auto"
-                 )
-               ),
-
-               conditionalPanel(
-                 ns = ns,
-                 condition = sprintf("input.%s === true", make_id(model, "rawFitSwitch")),
-                 tags$div(style = "padding-top: 10px; padding-bottom: 10px; height: 300px; overflow: auto;",
-                          verbatimTextOutput(outputId = ns(
-                            make_id(model, "results")
-                          )))
-               )
-             )
-             ),
-   nav_panel("Plots",
-             tags$div(style = "padding: 0 10px;",
-               selectizeInput(
-                 inputId = ns(make_id(model, "selectPlot")),
-                 label = "Select plot",
-                 selected = 2,
-                 width = "100%",
-                 choices = list(
-                   "Series with 2 Conditional SD Superimposed" = 1,
-                   "Series with 1% VaR Limits" = 2,
-                   "Conditional SD (vs |returns|)" = 3,
-                   "ACF of Observations" = 4,
-                   "ACF of Squared Observations" = 5,
-                   "ACF of Absolute Observations" = 6,
-                   "Cross-Correlations of Squared vs Actual Observations" = 7,
-                   "Empirical Density of Standardized Residuals" = 8,
-                   "norm - QQ Plot" = 9,
-                   "ACF of Standardized Residuals" = 10,
-                   "ACF of Squared Standardized Residuals" = 11,
-                   "New Impact Curve" = 12
-                 )
-               ),
-               tags$div(
-                 class = "resize_chart",
-               plotOutput(ns(make_id(model,"fitPlot")),
-                          height = "auto")
-               )
-             ))
-  )
-}
 
 
 #' @export

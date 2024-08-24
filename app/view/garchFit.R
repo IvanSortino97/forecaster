@@ -1,7 +1,7 @@
 # app/view/
 
 box::use(
-  shiny[...,reactiveValuesToList,renderPlot, renderPrint, conditionalPanel, observeEvent, reactiveVal, checkboxGroupInput, div, moduleServer, NS],
+  shiny[updateNumericInput,updateSelectizeInput, reactiveValues , tags, tagList , reactiveValuesToList, renderPlot, renderPrint, observeEvent, observe, req, reactive, reactiveVal, div, moduleServer, NS],
   bslib[page_fillable, card, card_header, card_body, card_title],
   shinyjs[show, hide, disable, enable],
   reactable[reactable, renderReactable, colDef],
@@ -28,25 +28,8 @@ ui <- function(id) {
                                 model_checkbox(ns("modelCheckbox"))
                               ),
                               card_title("Specify parameters and check results"),
-                              tagList(lapply(LETTERS[1:5], function(x) tags$div(x))),
-                              conditional_model(ns = ns,
-                                                model = "GARCH"
-                              ),
-                              conditional_model(ns = ns,
-                                                model = "eGARCH"
-                              ),
-                              conditional_model(ns = ns,
-                                                model = "GJR - GARCH"
-                              ),
-                              conditional_model(ns = ns,
-                                                model = "APARCH"
-                              ),
-                              conditional_model(ns = ns,
-                                                model = "IGARCH"
-                              ),
-                              conditional_model(ns = ns,
-                                                model = "FIGARCH"
-                              )
+                              tagList(lapply(models, function(x) conditional_model(ns = ns,
+                                                                                   model = x)  ))
                             )
   )
 }
