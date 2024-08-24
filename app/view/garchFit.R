@@ -5,8 +5,8 @@ box::use(
   bslib[page_fillable, card, card_header, card_body, card_title],
   shinyjs[show, hide, disable, enable],
   reactable[reactable, renderReactable, colDef],
-  rugarch[plot],
   shiny.router[is_page],
+  shinybrowser[is_device_mobile],
   spsComps[addLoader],
 )
 box::use(
@@ -27,7 +27,8 @@ ui <- function(id) {
                                 tags$h5("Select model to fit", style = in_card_subtitle_style),
                                 model_checkbox(ns("modelCheckbox"))
                               ),
-                              card_title("Specify parameters"),
+                              card_title("Specify parameters and check results"),
+                              tagList(lapply(LETTERS[1:5], function(x) tags$div(x))),
                               conditional_model(ns = ns,
                                                 model = "GARCH"
                               ),
@@ -189,8 +190,8 @@ server <- function(id, stockInfo) {
         output[[make_id(x,"opTable")]] <- renderReactable(makeOpRseTable(fitResults[[x]]$fit, "op"))
         output[[make_id(x,"rseTable")]] <- renderReactable(makeOpRseTable(fitResults[[x]]$fit, "rse"))
         output[[make_id(x,"results")]] <- renderPrint(fitResults[[x]]$fit)
-        output[[make_id(x,"fitPlot")]] <- renderPlot(plot(fitResults[[x]]$fit,
-                                                          which = as.numeric(input[[make_id(x,"selectPlot")]])))
+        output[[make_id(x,"fitPlot")]] <- renderPlot(makeFitPlot(fitResults[[x]]$fit, input[[make_id(x, "selectPlot")]]),
+                                                     height = if(is_device_mobile()) 200 else 400)
 
         fitSpinners[[x]]$hide()
 

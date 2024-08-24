@@ -6,11 +6,25 @@ box::use(
   reactable[reactableOutput, reactable, colDef, reactableTheme],
   htmlwidgets[JS],
   shinyWidgets[switchInput],
+  shinybrowser[is_device_mobile],
+  graphics[par],
   stringr[str_pad],
   stats[setNames],
-  rugarch[infocriteria,ugarchfit,ugarchspec],
+  rugarch[infocriteria,ugarchfit,ugarchspec, plot],
 )
 box::use(app / logic / general_utils[in_card_subtitle_style])
+
+#' @export
+models = c(
+  "GARCH" = "GARCH",
+  "eGARCH" = "eGARCH",
+  "GJR - GARCH" = "GJRGARCH",
+  "APARCH" = "APARCH",
+  "IGARCH" = "IGARCH",
+  "FIGARCH" = "FIGARCH"
+)
+
+submodels = c("GARCH", "TGARCH", "AVGARCH", "NGARCH", "NAGARCH", "APARCH","GJRGARCH", "ALLGARCH")
 
 #' @export
 model_checkbox <- function(id){
@@ -19,14 +33,7 @@ model_checkbox <- function(id){
     checkboxGroupInput(id,
                        label = NULL,
                        selected = c("GARCH", "eGARCH"),
-                       choices = c(
-                         "GARCH" = "GARCH",
-                         "eGARCH" = "eGARCH",
-                         "GJR - GARCH" = "GJRGARCH",
-                         "APARCH" = "APARCH",
-                         "IGARCH" = "IGARCH",
-                         "FIGARCH" = "FIGARCH"
-                       ))
+                       choices = models)
   )
 }
 
@@ -47,10 +54,7 @@ distributions = c("Normal" = "norm",
                   "Skewed Normal" = "snorm",
                   "Skewed Student-t" = "sstd")
 
-#' @export
-models = c("GARCH","eGARCH","GJRGARCH","APARCH","IGARCH","FIGARCH")
 
-submodels = c("GARCH", "TGARCH", "AVGARCH", "NGARCH", "NAGARCH", "APARCH","GJRGARCH", "ALLGARCH")
 
 #' @export
 fit_garch <- function(model, p, q, ar = 0, ma = 0, dist, data, info = T, mean = T, submodel = NULL) {
@@ -207,7 +211,7 @@ pad_reactable <- function(outputId) tags$div(style = "padding: 0 10px;", reactab
 #' @export
 model_body <- function(ns, model){
 
-  navset_underline(
+  navset_underline(header = tags$hr(style = "margin: 0; margin-top: 10px"),
 
    nav_panel("Parameters",
 
@@ -307,7 +311,11 @@ model_body <- function(ns, model){
                    "New Impact Curve" = 12
                  )
                ),
-               plotOutput(ns(make_id(model,"fitPlot")))
+               tags$div(
+                 class = "resize_chart",
+               plotOutput(ns(make_id(model,"fitPlot")),
+                          height = "auto")
+               )
              ))
   )
 }
@@ -484,4 +492,13 @@ makeOpRseTable <- function(fit, type) {
               )
             )
   )
+}
+
+#' @export
+makeFitPlot <- function(fit, num){
+  old_par <- par(no.readonly = TRUE)
+  par(mar = c(2, 2, 1, 0.1))
+  p <- plot(fit, which = as.numeric(num))
+  par(old_par)
+  return(p)
 }
