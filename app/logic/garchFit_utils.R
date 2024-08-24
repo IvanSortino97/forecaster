@@ -106,8 +106,8 @@ autofitSettings <- function(ns, model){
   popover(
     bs_icon("gear", title = "Settings", marginTop = "3px", marginRight = "10px"),
     title = "Autofit Settings",
-    numericInput( ns(make_id(model,"garchRange")), "max GARCH", 3 ),
-    numericInput( ns(make_id(model,"armaRange")), "max ARMA", 0 )
+    numericInput( ns(make_id(model,"garchRange")), "max GARCH", 3 , min = 0, step = 1),
+    numericInput( ns(make_id(model,"armaRange")), "max ARMA", 0 , min = 0, step = 1)
 
   )
 }
@@ -148,9 +148,9 @@ model_body <- function(ns, model){
                                body_subtitle("GARCH Order"),
                                tags$div(style = "display: flex; gap: 10px; width: 50%;", class = "model-param",
                                         numericInput(inputId = ns(make_id(model,"p")),
-                                                     label = NULL, value = 1, min = 0),
+                                                     label = NULL, value = 1, min = 0, step = 1),
                                         numericInput(inputId = ns(make_id(model,"q")),
-                                                     label = NULL, value = 1, min = 0)
+                                                     label = NULL, value = 1, min = 0, step = 1)
                                ),
 
                                body_subtitle("ARMA Order"),
