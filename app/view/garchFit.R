@@ -10,7 +10,7 @@ box::use(
   spsComps[addLoader],
 )
 box::use(
-  app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, show_condition],
+  app / logic / general_utils[page_footer, in_card_subtitle_style, conditional_page_fillable, make_spinner, show_condition],
   app / logic / garchFit_utils[...]
 )
 
@@ -29,7 +29,11 @@ ui <- function(id) {
                               ),
                               card_title("Specify parameters and check results"),
                               tagList(lapply(models, function(x) conditional_model(ns = ns,
-                                                                                   model = x)  ))
+                                                                                   model = x))),
+                              page_footer(hrefPageNext = "garchBacktest",
+                                          textPageNext = "Backtest Model",
+                                          hrefPagePrecedent = "stockAnalysis",
+                                          textPagePrecedent = "Stock Analysis")
                             )
   )
 }

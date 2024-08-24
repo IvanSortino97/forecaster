@@ -1,13 +1,15 @@
 # app/view/
 
 box::use(
-  shiny[div, moduleServer, NS, tags, observeEvent, observe],
+  shiny[... , div, moduleServer, NS, tags, observeEvent, observe],
   bslib[page_fillable, card, card_header, card_body, card_title],
   shinyjs[hide],
   shiny.router[is_page],
 )
 box::use(
   app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, show_condition],
+  app / logic / garchFit_utils[models],
+  app / logic / garchBacktest_utils[...]
 )
 
 #' @export
@@ -20,10 +22,7 @@ ui <- function(id) {
                             subtitle = "TODO: backtest models. Define window size and backtesting method ",
                             condition_page = "garchFit",
                             body = div(
-                                card(
-                                  tags$h5("Select Parameters for backtest", style = in_card_subtitle_style),
-
-                                )
+                                tagList(lapply(models, function(x) conditionalBacktestCard(ns = ns, x)))
                             )
   )
 }
@@ -38,8 +37,8 @@ server <- function(id, stockInfo, garchFit) {
     hide("conditionalPanel")
     observeEvent(garchFit()$fitResults(),{
       show_condition(garchFit()$fitResults())
-      })
 
+      })
 
   })
 }

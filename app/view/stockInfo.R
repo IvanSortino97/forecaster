@@ -123,7 +123,7 @@ ui <- function(id) {
       reactableOutput(ns("balancesheetTable"))
       )
     ),
-    page_footer(hrefPageNext = route_link("stockAnalysis"),
+    page_footer(hrefPageNext = "stockAnalysis",
                 textPageNext = "Stock Analysis")
 
     )

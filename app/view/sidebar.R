@@ -1,7 +1,6 @@
-box::use(shiny[ actionButton, tags, HTML, observe, reactiveVal, moduleServer, req],
+box::use(shiny[tags,],
          bslib[sidebar, accordion, accordion_panel, sidebar_toggle],
-         shiny.router[route_link, get_page],
-         shinybrowser[get_device],
+         shiny.router[route_link],
          bsicons[bs_icon])
 
 # Custom class for accordion sections
@@ -47,16 +46,21 @@ sidebar_component <- function(idSd) {
       # Test buttons
       accordion_panel(
         "GARCH Model",
-        icon = bs_icon("apple"),
+        icon = bs_icon("cone"),
        accordion_section(
           title = "Fit Models",
           page = "garchFit",
-          icon = "list-check"
+          icon = "sliders2-vertical"
         ),
        accordion_section(
           title = "Backtest Models",
           page = "garchBacktest",
-          icon = "list-check"
+          icon = "repeat"
+        ),
+       accordion_section(
+          title = "Forecast",
+          page = "garchForecast",
+          icon = "fast-forward"
         )
       ),
     )

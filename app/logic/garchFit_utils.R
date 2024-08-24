@@ -1,6 +1,6 @@
 box::use(
   shiny[plotOutput, verbatimTextOutput, incProgress,withProgress, selectizeInput, tags, checkboxGroupInput,checkboxInput, conditionalPanel, numericInput],
-  bslib[card, card_header, card_body, layout_column_wrap, navset_underline, nav_panel],
+  bslib[popover, card, card_header, card_body, layout_column_wrap, navset_underline, nav_panel],
   bsicons[bs_icon],
   data.table[data.table, as.data.table],
   reactable[reactableOutput, reactable, colDef, reactableTheme],
@@ -62,11 +62,17 @@ conditional_model <- function(ns , model){
                    parameter_card(
                      ns = ns,
                      model = model,
-                     #switchId = ns(paste0(model, "-switch")),
                      title = paste0(names(models[which(models == model)]), " Model"),
                      body = model_body(ns = ns,
                                        model = model)
                    )
+  )
+}
+
+parameter_card <- function(title, model, body, ns) {
+  card(
+    settings_header(title, model, ns),
+    card_body(gap = 0, body)
   )
 }
 
@@ -79,10 +85,7 @@ settings_header <- function(title, model, ns ) {
                                id = ns(make_id(model,"loader")))
              ),
              tags$div(class = "d-flex justify-content-end align-items-center",
-                      # Show info icon -> make it a button to hide the parameter table
-                      # conditionalPanel(ns = ns,
-                      #                  condition = sprintf("input.%s === true", make_id(model, "switch")),
-                      #                  bsicons::bs_icon("info")),
+                      autofitSettings(ns, model),
                       switchInput(
                         inputId = ns(make_id(model,"switch")),
                         labelWidth = "100%",
@@ -99,20 +102,16 @@ settings_header <- function(title, model, ns ) {
   )
 }
 
-#' @export
-parameter_card <- function(title, model, body, ns) {
-  card(
-    settings_header(title, model, ns),
-    card_body(gap = 0,
-              # conditionalPanel(ns = ns,
-              #                  condition = sprintf("input.%s === true", make_id(model, "switch")),
-              #                  tags$div(style = "padding-top: 10px; padding-bottom: 15px;",
-              #                  reactableOutput(ns(make_id(model, "autoTable")))
-              #                  )
-              # ),
-              body)
+autofitSettings <- function(ns, model){
+  popover(
+    bs_icon("gear", title = "Settings", marginTop = "4px", marginRight = "10px"),
+    title = "Autofit Settings",
+    numericInput( ns(make_id(model,"garchRange")), "max GARCH", 3 ),
+    numericInput( ns(make_id(model,"armaRange")), "max ARMA", 0 )
+
   )
 }
+
 
 
 body_subtitle <- function(text, additional_style = "") tags$p(text, style = paste(in_card_subtitle_style,paste0("font-size: 0.9rem;",additional_style)))

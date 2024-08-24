@@ -106,7 +106,7 @@ page_footer <- function(hrefPagePrecedent = NULL, hrefPageNext = NULL, textPageP
     shiny::tags$hr(class = "m-0 mb-2"), # Horizontal line
     if (!is.null(hrefPagePrecedent)) {
       shiny::tags$a(
-        href = hrefPagePrecedent,
+        href = route_link(hrefPagePrecedent),
         class = "btn btn-light btn-sm",
         style = "float: left; border: 1px solid #ccc; padding: 5px 10px; margin: 5px;",
         textPagePrecedent
@@ -114,7 +114,7 @@ page_footer <- function(hrefPagePrecedent = NULL, hrefPageNext = NULL, textPageP
     },
     if (!is.null(hrefPageNext)) {
       shiny::tags$a(
-        href = hrefPageNext,
+        href = route_link(hrefPageNext),
         class = "btn btn-light btn-sm",
         style = "float: right; border: 1px solid #ccc; padding: 5px 10px; margin: 5px;",
         textPageNext
