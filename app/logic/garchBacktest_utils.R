@@ -1,5 +1,5 @@
 box::use(
-  shiny[conditionalPanel, tags, numericInput],
+  shiny[conditionalPanel, tags, numericInput, selectizeInput],
   bslib[card, card_header, popover],
   bsicons[bs_icon]
 )
@@ -13,7 +13,8 @@ conditionalBacktestCard <-  function(ns, model){
                        model, model_settings(ns, model),
                        class = "d-flex justify-content-between"
                      ),
-                     tags$p("body")
+
+                     numericInput(ns(paste0(model,"forecastLength")), "Out.of-sample data", 1000)
                    ))
 }
 
@@ -21,7 +22,9 @@ model_settings <- function(ns, model){
   popover(
   bs_icon("gear", title = "settings", marginTop = "5px"),
   title = "Settings",
-  numericInput( ns(paste0(model,"test")), "Window size", 500 )
+  numericInput(ns(paste0(model,"refitEvery")), "Refit every", 100 ),
+  selectizeInput(ns(paste0(model,"refitWindow")), "Refit window", choices =  c("moving","recursive"), selected = "moving"),
+  selectizeInput(ns(paste0(model,"solver")), "solver", choices = c("nlminb", "solnp", "lbfgs", "gosolnp", "nloptr", "hybrid"), selected = "hybrid" )
 
   )
   }

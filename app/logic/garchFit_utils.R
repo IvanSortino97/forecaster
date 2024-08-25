@@ -199,10 +199,11 @@ model_body <- function(ns, model){
                              )
                    ),
                    nav_panel("Plots",
-                             tags$div(style = "padding: 0 10px;",
+                             tags$div(#style = "padding: 0 10px;",
+                                      body_subtitle("Select plot:", "padding-top: 15px"),
                                       selectizeInput(
                                         inputId = ns(make_id(model, "selectPlot")),
-                                        label = "Select plot",
+                                        label = NULL,
                                         selected = 2,
                                         width = "100%",
                                         choices = list(
@@ -222,6 +223,7 @@ model_body <- function(ns, model){
                                       ),
                                       tags$div(
                                         class = "resize_chart",
+                                        style = "padding-top: 10px",
                                         plotOutput(ns(make_id(model,"fitPlot")),
                                                    height = "auto")
                                       )
@@ -480,6 +482,8 @@ makeOpRseTable <- function(fit, type) {
             columns = list(
               name = colDef(
                 header = function(value) gsub("name", "", value),
+                sticky = "left",
+                width = 70,
                 style = list(
                   textAlign = "left",
                   fontSize = "0.8rem",
