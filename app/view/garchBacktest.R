@@ -41,7 +41,7 @@ server <- function(id, stockInfo, garchFit) {
       })
 
     #general observe to fetch stockInfo
-    observe({
+    observeEvent(stockInfo()$returns(),{
       req(stockInfo()$returns())
       totObs <- length(stockInfo()$returns())
       outSample <- floor(totObs/3)

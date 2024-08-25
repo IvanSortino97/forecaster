@@ -5,7 +5,8 @@ box::use(
 )
 
 box::use(
-  app / logic / general_utils[subtitle]
+  app / logic / general_utils[subtitle],
+  app / logic / garchFit_utils[models]
 )
 
 #' @export
@@ -21,8 +22,15 @@ conditionalBacktestCard <-  function(ns, model){
 
 model_header <- function(ns, model){
   card_header(
-    model, model_settings(ns, model),
-    class = "d-flex justify-content-between"
+    tags$div(
+    class = "d-flex align-items-center",
+    tags$div( paste0(names(models[which(models == model)]), " Model"),
+              class = "d-flex align-items-center", style = "margin-bottom:5px;"),
+    tags$div(style = "margin-left: 10px; width: 30px; height: 30px; margin-bottom: 5px",
+             id = ns(paste0(model,"loader")))
+    ),
+    model_settings(ns, model),
+    class = "d-flex justify-content-between pb-0"
   )
 }
 
