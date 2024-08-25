@@ -80,7 +80,7 @@ settings_header <- function(title, model, ns ) {
   card_header(
     tags$div(class = "d-flex justify-content-between align-items-center",
              tags$div(class = "d-flex align-items-center",
-                      tags$div(style = "padding-top: 5px;", title),
+                      tags$div(style = "padding-top: 5px;", title, class = "d-flex align-items-center"),
                       tags$div(style = "margin-left: 10px; padding-top: 5px; width: 30px; height: 30px;",
                                id = ns(make_id(model,"loader")))
              ),

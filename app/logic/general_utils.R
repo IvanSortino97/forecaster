@@ -63,7 +63,7 @@ header <- function(title, idtextOutput) {
 title <- function(text, id = ""){
   tags$div( style = "display: flex; align-items: top;",
        tags$h4(text, style = "font-weight: bold; color: #464646; font-size: 20px;"),
-       tags$div(id = id, style = "height: 23px; width: 23px; margin-left: 10px;")
+       tags$div(id = id, style = "height: 23px; width: 23px; margin-left: 10px; margin-top: 1px;")
   )
 }
 
