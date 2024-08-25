@@ -46,7 +46,7 @@ sidebar_component <- function(idSd) {
       # Test buttons
       accordion_panel(
         "GARCH Model",
-        icon = bs_icon("cone"),
+        icon = bs_icon("hammer"),
        accordion_section(
           title = "Fit Models",
           page = "garchFit",

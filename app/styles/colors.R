@@ -1,4 +1,4 @@
 
 custom_blue = "#007bc2"
 
-graph_title_blck = "#464646;"
+graph_title_black = "#464646;"
