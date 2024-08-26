@@ -24,7 +24,7 @@ ui <- function(id) {
                             subtitle = "Specify parameters to fit models. Auto mode provide the best parameter minimizin AIC statistic",
                             body = div(
                               card(
-                                tags$h5("Select model to fit", style = in_card_subtitle_style),
+                                tags$h5("Select model to fit", style = paste0(in_card_subtitle_style, "font-size: 1rem;")),
                                 model_checkbox(ns("modelCheckbox"))
                               ),
                               card_title("Specify parameters and check results"),

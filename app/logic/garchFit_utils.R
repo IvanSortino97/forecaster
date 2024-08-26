@@ -30,6 +30,7 @@ submodels = c("GARCH", "TGARCH", "AVGARCH", "NGARCH", "NAGARCH", "APARCH","GJRGA
 model_checkbox <- function(id){
   tags$div(
     class = "multicol",
+    style = "font-size: 0.9rem !important;",
     checkboxGroupInput(id,
                        label = NULL,
                        selected = c("GARCH", "eGARCH"),
@@ -114,7 +115,7 @@ autofitSettings <- function(ns, model){
 
 
 #' @export
-body_subtitle <- function(text, additional_style = "") tags$p(text, style = paste(in_card_subtitle_style,paste0("font-size: 0.9rem;",additional_style)))
+body_subtitle <- function(text, additional_style = "") tags$p(text, style = paste0(in_card_subtitle_style,paste0("font-size: 0.9rem;",additional_style)))
 
 pad_reactable <- function(outputId) tags$div(style = "padding: 0 10px;", reactableOutput(outputId = outputId) )
 

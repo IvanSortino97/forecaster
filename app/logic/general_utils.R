@@ -208,4 +208,4 @@ conditional_page_fillable <- function(title,
 
 
 #' @export
-in_card_subtitle_style = "font-weight: 500; line-height: 1.375rem;font-size: 1rem; color: #464646;"
+in_card_subtitle_style = "font-weight: 500; line-height: 1.375rem; color: #464646;"

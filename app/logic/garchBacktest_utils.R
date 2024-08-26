@@ -68,16 +68,16 @@ model_body <- function(ns, model){
                                echarts4rOutput(ns(paste0(model,"backtestPlot")), height = 350 )
                      ),
                      nav_panel("Report",
-                               body_subtitle("VaR Backtest Report"),
+                               body_subtitle("VaR Backtest Report", "margin-bottom: 0;"),
                                reactableOutput(ns(paste0(model,"tableInfo"))),
                                tags$br(),
-                               body_subtitle("VaR Exceedance"),
+                               body_subtitle("VaR Exceedance", "margin-bottom: 0;"),
                                reactableOutput(ns(paste0(model,"tableExceed"))),
                                tags$br(),
-                               body_subtitle("Unconditional Coverage (Kupiec)"),
+                               body_subtitle("Unconditional Coverage (Kupiec)", "margin-bottom: 0;"),
                                reactableOutput(ns(paste0(model,"tableUc"))),
                                tags$br(),
-                               body_subtitle("Conditional Coverage (Christoffersen)"),
+                               body_subtitle("Conditional Coverage (Christoffersen)", "margin-bottom: 0;"),
                                reactableOutput(ns(paste0(model,"tableCc"))),
                      )
   )
