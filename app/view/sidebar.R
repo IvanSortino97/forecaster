@@ -6,10 +6,11 @@ box::use(shiny[tags,],
 # Custom class for accordion sections
 accordion_section <- function(title, icon = NULL, page, custom_class = "custom-accordion-section") {
   tags$a(
+    id = if(page != "/") page else "home" ,
     href = route_link(page),
     class = custom_class,
     if (!is.null(icon)) { bs_icon(icon) },
-    tags$h6(title, style = "display: inline; margin-left: 5px;")
+    tags$p(title, style = "display: inline; margin-left: 5px; ")
   )
 }
 
@@ -17,6 +18,7 @@ accordion_section <- function(title, icon = NULL, page, custom_class = "custom-a
 sidebar_component <- function(idSd) {
   sidebar(
     id = idSd,
+    class = "custom-sidebar",
 
     # Home
     accordion_section(

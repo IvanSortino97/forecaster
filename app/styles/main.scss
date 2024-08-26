@@ -14,10 +14,16 @@ div#shiny-notification-panel {
 }
 
 /* Sidebar custom themes */
+.custom-sidebar {
+  max-height: 100vh; /* Prevent overflow by setting max height */
+  overflow: hidden !important; /* Hide overflow */
+}
+
 .custom-accordion-section {
   padding: 10px 15px;
   text-decoration: none;
-  font-size: 18px;
+  font-size: 1rem ;
+  font-weight: 350 ;
   color: black;
   display: block;
   transition: background-color 0.3s ease; /* Smooth transition for background color change */
@@ -31,7 +37,7 @@ div#shiny-notification-panel {
 /* Active state */
 .custom-accordion-section.active {
   background-color: #f0f0f0;
-  font-weight: bold;
+  font-weight: 600;
   border-left: 4px solid #007bc2;
   cursor: default; /* Change cursor to default when active */
 }

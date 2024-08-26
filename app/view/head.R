@@ -7,6 +7,7 @@ html <- tags$head(
   tags$style(
     HTML(
       "
+
       "
     )
   ),
@@ -16,30 +17,42 @@ html <- tags$head(
   tags$script(
     HTML(
       "
-      $(document).ready(function() {
-        function updateActiveClass() {
-          if (window.location.hash === '#!/') {
-            $('.sidebar a').removeClass('active');
-          }
+    $(document).ready(function() {
+      function updateActiveClass() {
+        // Get the current hash, remove any unwanted characters like '#!/' or '#'
+        var currentHash = window.location.hash.replace('#!/', '').replace('#', '');
+
+        // Remove 'active' class from all accordion sections
+        $('.sidebar a').removeClass('active');
+
+        // If hash is empty, set the active class to the 'home' link
+        if (currentHash === '') {
+          $('#home').addClass('active');
+        } else {
+          // Otherwise, add 'active' class to the matching accordion section
+          $('#' + currentHash).addClass('active');
         }
+      }
 
-        // Run on initial load
-        updateActiveClass();
+      // Run on initial load
+      updateActiveClass();
 
-        // Add click event listener
-        $('.sidebar a').click(function() {
-          $('.sidebar a').removeClass('active');
-          $(this).addClass('active');
-        });
-
-        // Monitor hash changes
-        $(window).on('hashchange', function() {
-          updateActiveClass();
-        });
+      // Add click event listener to all sidebar links
+      $('.sidebar a').click(function() {
+        $('.sidebar a').removeClass('active');  // Remove 'active' from all
+        $(this).addClass('active');  // Add 'active' to the clicked element
       });
+
+      // Monitor hash changes and update active class accordingly
+      $(window).on('hashchange', function() {
+        updateActiveClass();
+      });
+    });
     "
     )
-  ),
+  )
+  ,
+
 
   #scroll to top when page is changed
   tags$script(
