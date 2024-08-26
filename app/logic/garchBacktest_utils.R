@@ -2,13 +2,15 @@ box::use(
   shiny[uiOutput ,sliderInput,conditionalPanel, tags, numericInput, selectizeInput],
   bslib[navset_underline, nav_panel,card, card_header,card_body, card_footer, popover],
   bsicons[bs_icon],
-
+  data.table[data.table],
+  rugarch[VaRTest],
+  reactable[reactable, colDef, reactableOutput, reactableTheme],
   echarts4r[e_dims,e_show_loading, e_title, echarts4rOutput,e_scatter,e_grid,e_legend,e_tooltip,e_line,e_charts,]
 )
 
 box::use(
   app / logic / general_utils[subtitle],
-  app / logic / garchFit_utils[models],
+  app / logic / garchFit_utils[models, body_subtitle],
   app / styles / colors[custom_blue]
 
 )
@@ -66,7 +68,17 @@ model_body <- function(ns, model){
                                echarts4rOutput(ns(paste0(model,"backtestPlot")), height = 350 )
                      ),
                      nav_panel("Report",
-                               tags$p("report")
+                               body_subtitle("VaR Backtest Report"),
+                               reactableOutput(ns(paste0(model,"tableInfo"))),
+                               tags$br(),
+                               body_subtitle("VaR Exceedance"),
+                               reactableOutput(ns(paste0(model,"tableExceed"))),
+                               tags$br(),
+                               body_subtitle("Unconditional Coverage (Kupiec)"),
+                               reactableOutput(ns(paste0(model,"tableUc"))),
+                               tags$br(),
+                               body_subtitle("Conditional Coverage (Christoffersen)"),
+                               reactableOutput(ns(paste0(model,"tableCc"))),
                      )
   )
   )
@@ -145,3 +157,134 @@ make_BacktestPlot <- function(backtest, ticker, model){
     e_show_loading()
 
 }
+
+
+
+#' @export
+make_report <- function(backtest, info = F , type = NULL){
+
+  makeDt <- function(n,v,a = NULL) data.table(alpha = a, name = n, value = v)
+  table <- data.table()
+
+  if(info){
+
+    model = sprintf("%s-%s",
+                    backtest@model[["spec"]]@model[["modeldesc"]][["vmodel"]],
+                    backtest@model[["spec"]]@model[["modeldesc"]][["distribution"]])
+    backtestLength = backtest@model[["forecast.length"]]
+    refitWindow = backtest@model[["refit.window"]]
+
+    table <- makeDt(
+      c("Model:", "Backtest Length:", "Refit Window:"),
+      c(model, backtestLength,  refitWindow)
+    )
+
+    } else {
+      actual = backtest@forecast$VaR$realized
+      test01 <- VaRTest(alpha = 0.01, VaR = backtest@forecast$VaR$`alpha(1%)` ,actual = actual )
+      test05 <- VaRTest(alpha = 0.05, VaR = backtest@forecast$VaR$`alpha(5%)` ,actual = actual )
+
+      if(type == "exceed"){
+
+        table <- rbind(makeDt(
+          c("alpha:", "Expected Exceed:", "Actual VaR Exceed:"),
+          c("1%", test01$expected.exceed, test01$actual.exceed),
+          "alpha(1%)"
+        ),
+        makeDt(
+          c("alpha:", "Expected Exceed:", "Actual VaR Exceed:"),
+          c("5%", test01$expected.exceed, test01$actual.exceed),
+          "alpha(5%)"
+        ))
+      } else if (type == "uc"){
+
+        table <- rbind(
+          makeDt(
+            c("Null-Hypothesis:", "LR.uc Statistic:", "LR.uc Critical:", "LR.uc p-value:", "Decision:"),
+            c(test01$uc.H0, test01$uc.LRstat, test01$uc.critical,test01$uc.LRp,test01$uc.Decision ),
+          "alpha(1%)"
+          ),
+          makeDt(
+            c("Null-Hypothesis:", "LR.uc Statistic:", "LR.uc Critical:", "LR.uc p-value:", "Decision:"),
+            c(test05$uc.H0, test05$uc.LRstat, test05$uc.critical,test05$uc.LRp,test05$uc.Decision ),
+          "alpha(5%)"
+          )
+
+        )
+
+      } else {
+        table <- rbind(
+          makeDt(
+            c("Null-Hypothesis:", "LR.cc Statistic:", "LR.cc Critical:", "LR.cc p-value:", "Decision:"),
+            c(test01$cc.H0, test01$cc.LRstat, test01$cc.critical,test01$cc.LRp,test01$cc.Decision ),
+            "alpha(1%)"
+          ),
+          makeDt(
+            c("Null-Hypothesis:", "LR.cc Statistic:", "LR.cc Critical:", "LR.cc p-value:", "Decision:"),
+            c(test05$cc.H0, test05$cc.LRstat, test05$cc.critical,test05$cc.LRp,test05$cc.Decision ),
+            "alpha(5%)"
+          )
+
+        )
+
+      }
+    } # end table making
+
+  table_group <- table
+  columns <- NULL
+  details <- NULL
+
+  if(info){
+    columns <- list( name = nameColDef, value = valueColDef)
+  } else {
+    columns <- list( alpha = nameColDef)
+    table_group <- unique(table[, "alpha", drop = FALSE])
+    details <- function(index){
+      selected_alpha <- table_group$alpha[index]
+      details_data <- table[table$alpha == selected_alpha, ]
+
+      tags$div(style = "padding: 1rem",
+               reactable(details_data,
+                         outlined = T,
+                         compact = T,
+                         columns = list(
+                           alpha = colDef(show = F),
+                           name = nameColDef,
+                           value = valueColDef
+                         ),
+                         theme = noHeader
+                         )
+               )
+    }
+  }
+
+  #if(type == "exceed") browser()
+
+  table_r <- reactable(table_group,
+                       compact = T,
+                       highlight = TRUE,
+                       columns = columns,
+                       theme = noHeader,
+                       details = details)
+
+return(table_r)
+
+  }
+
+# table styles
+nameColDef <- colDef(
+  style = list(
+    textAlign = "left",
+    fontWeight = "600",
+    fontSize = "0.7rem",
+    lineHeight = "1.375rem"
+  )
+)
+
+valueColDef <- colDef(style = list(
+  textAlign = "right",
+  fontSize = "0.7rem"
+))
+
+noHeader <- reactableTheme(headerStyle = list(display = "none"),
+                           cellPadding = "4px 8px")

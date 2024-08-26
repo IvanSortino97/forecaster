@@ -9,7 +9,6 @@ box::use(
 )
 
 page_links <- list(
-  list(title = "Home", page = "/"),
   list(title = "Stock Selection", page = "stockInfo"),
   list(title = "Stock Analysis", page = "stockAnalysis"),
   list(title = "Fit model", page = "garchFit"),
@@ -21,7 +20,8 @@ ui <- function(id) {
   ns <- NS(id)
 
 tagList(
-div("TODO: Homepage"),
+title("TODO: Homepage"),
+subtitle("Please select a stock to begin"),
 hr(),
 lapply(page_links, function(link) {
   tags$a(href = route_link(link$page),

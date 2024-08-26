@@ -27,7 +27,7 @@ sidebar_component <- function(idSd) {
 
     # Stock info
     accordion(
-      open = TRUE,
+      open = c("Stock info"),
       accordion_panel(
         "Stock info",
         icon = bs_icon("graph-up"),
@@ -43,9 +43,8 @@ sidebar_component <- function(idSd) {
         )
       ),
 
-      # Test buttons
       accordion_panel(
-        "GARCH Model",
+        "GARCH Models",
         icon = bs_icon("hammer"),
        accordion_section(
           title = "Fit Models",
@@ -63,6 +62,12 @@ sidebar_component <- function(idSd) {
           icon = "fast-forward"
         )
       ),
+
+      accordion_panel(
+        "ARIMA Models",
+        icon = bs_icon("cone")
+
+      )
     )
   )
 }

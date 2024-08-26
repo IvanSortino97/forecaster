@@ -9,6 +9,7 @@ box::use(
   shinytoastr[toastr_info, toastr_clear_all],
   rugarch[ugarchroll],
   echarts4r[renderEcharts4r],
+  reactable[renderReactable],
 )
 box::use(
   app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, show_condition],
@@ -125,7 +126,11 @@ server <- function(id, stockInfo, garchFit) {
         output[[paste0(x,"backtestPlot")]] <- renderEcharts4r(make_BacktestPlot(backtestResults[[x]],
                                                                                 ticker = stockInfo()$ticker(),
                                                                                 model = x))
-        #output[[paste0(x,"backtestReport")]] <- renderEcharts4r()
+
+        output[[paste0(x,"tableInfo")]] <- renderReactable(make_report(backtestResults[[x]], info = T))
+        output[[paste0(x,"tableExceed")]] <- renderReactable(make_report(backtestResults[[x]], type = "exceed"))
+        output[[paste0(x,"tableUc")]] <- renderReactable(make_report(backtestResults[[x]], type = "uc"))
+        output[[paste0(x,"tableCc")]] <- renderReactable(make_report(backtestResults[[x]], type = "cc"))
 
         toastr_clear_all(TRUE)
         btSpinners[[x]]$hide()
