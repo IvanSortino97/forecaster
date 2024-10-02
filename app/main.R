@@ -2,6 +2,7 @@ box::use(shiny[observe, reactive, reactiveVal, moduleServer, NS, tags, renderTex
          bslib[..., page_sidebar, page_fillable], # do not remove "..."
          shinybrowser[get_device, detect],
          shinyjs[useShinyjs],
+         waiter[useWaiter,waiterPreloader, waiterShowOnLoad, spin_fading_circles],
          shinytoastr[toastr_warning, useToastr],
          shiny.router[get_page, router_ui, route, router_server])
 
@@ -19,6 +20,8 @@ ui <- function(id) {
                detect(), # shinybrowser
                head$html, # head script and style
                useShinyjs(),
+               useWaiter(),
+  waiterPreloader(),
 
     title = header("Forcaster", idtextOutput = ns("stockTicker")),
 
@@ -30,7 +33,9 @@ ui <- function(id) {
       route("stockAnalysis", stockAnalysis$ui(ns("stockAnalysis"))),
 
       route("garchFit", garchFit$ui(ns("garchFit"))),
-      route("garchBacktest", garchBacktest$ui(ns("garchBacktest")))
+      route("garchBacktest", garchBacktest$ui(ns("garchBacktest"))),
+      route("garchForecast", garchForecast$ui(ns("garchForecast")))
+
     ))
   )
 
@@ -51,6 +56,7 @@ server <- function(id) {
 
     op_garchFit <- garchFit$server("garchFit", reactive(op_stockInfo))
     garchBacktest$server("garchBacktest", reactive(op_stockInfo), reactive(op_garchFit))
+    garchForecast$server("garchForecast", reactive(op_stockInfo), reactive(op_garchFit))
 
 
     # -------------------------------------------------------------------------

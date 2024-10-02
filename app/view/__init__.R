@@ -11,4 +11,5 @@ box::use(
 
   app/view/garchFit,
   app/view/garchBacktest,
+  app/view/garchForecast,
 )
