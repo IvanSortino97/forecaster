@@ -43,9 +43,9 @@ server <- function(id, stockInfo, garchFit) {
     names(btSpinners) <- models
 
     hide("conditionalPanel")
+
     observeEvent(garchFit()$fitResults(),{
       show_condition(garchFit()$fitResults())
-
       })
 
     previousParams <- reactiveValues()
