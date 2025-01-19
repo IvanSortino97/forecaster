@@ -11,8 +11,7 @@ box::use(
 box::use(
   app / logic / general_utils[subtitle],
   app / logic / garchFit_utils[models, body_subtitle],
-  app / styles / colors[custom_blue]
-
+  app / styles / colors[custom_blue, violation_5, violation_1, alpha_5, alpha_1]
 )
 
 #' @export
@@ -131,19 +130,19 @@ make_BacktestPlot <- function(backtest, ticker, model){
            lineStyle = list(color = custom_blue, width = 1)) |>
     e_line(`alpha(5%)`,
            symbol = "none",
-           lineStyle = list(color = "#FFD700", width = 1),
-           itemStyle = list(color = "#FFD700"),
+           lineStyle = list(color = alpha_5, width = 1),
+           itemStyle = list(color = alpha_5),
            name = "VaR 5%") |>
     e_line(`alpha(1%)`,
            symbol = "none",
-           lineStyle = list(color = "#FF4500", width = 1),
-           itemStyle = list(color = "#FF4500"),
+           lineStyle = list(color = alpha_1, width = 1),
+           itemStyle = list(color = alpha_1),
            name = "VaR 1%") |>
 
     e_scatter(violation05, name = "VaR Violations 5%",
-              symbol_size = 5, itemStyle = list(color = "#FF8C00")) |>
+              symbol_size = 5, itemStyle = list(color = violation_5)) |>
     e_scatter(violation01, name = "VaR Violations 1%",
-              symbol_size = 5, itemStyle = list(color = "#8B0000")) |>
+              symbol_size = 5, itemStyle = list(color = violation_1)) |>
     e_tooltip(trigger = "axis") |>
     e_legend(type = "plain",
              orient = "horizontal",
