@@ -2,10 +2,11 @@ box::use(
   shiny[uiOutput ,sliderInput,conditionalPanel, tags, numericInput, selectizeInput],
   bslib[navset_underline, nav_panel,card, card_header,card_body, card_footer],
   data.table[data.table, rbindlist],
+  dplyr[mutate],
   rugarch[sigma],
   utils[tail],
   zoo[index],
-  reactable[reactable, colDef, reactableOutput, reactableTheme],
+  reactable[reactable, colDef,colFormat, reactableOutput, reactableTheme],
   echarts4r[echarts4rOutput, e_title,e_grid,e_legend,e_tooltip,e_line,e_charts,e_mark_line]
 )
 
@@ -46,18 +47,10 @@ model_body <- function(ns, model){
                              nav_panel("Plot",
                                        echarts4rOutput(ns(paste0(model,"forecastPlot")), height = 350 )
                              ),
-                             nav_panel("Report",
-                                       body_subtitle("VaR Backtest Report", "margin-bottom: 0;"),
-                                       reactableOutput(ns(paste0(model,"tableInfo"))),
-                                       tags$br(),
-                                       body_subtitle("VaR Exceedance", "margin-bottom: 0;"),
-                                       reactableOutput(ns(paste0(model,"tableExceed"))),
-                                       tags$br(),
-                                       body_subtitle("Unconditional Coverage (Kupiec)", "margin-bottom: 0;"),
-                                       reactableOutput(ns(paste0(model,"tableUc"))),
-                                       tags$br(),
-                                       body_subtitle("Conditional Coverage (Christoffersen)", "margin-bottom: 0;"),
-                                       reactableOutput(ns(paste0(model,"tableCc"))),
+                             nav_panel("Results",
+                                       body_subtitle("Forecast results", "margin-bottom: 0;"),
+                                       reactableOutput(ns(paste0(model,"forecastRaw"))),
+
                              )
             )
   )
@@ -138,3 +131,147 @@ make_forecast_plot <- function(forecast_df, model, n_ahead){
     e_title(sprintf("%s Volatility Forecast with %d-Day Ahead", model, n_ahead))
 
 }
+
+#' @export
+make_raw_table <- function(forecast_df){
+
+  reactable(
+  forecast_df |> dplyr::mutate(across(-Time, ~round(., 4))),
+  striped = FALSE,
+  compact = TRUE,
+  highlight = TRUE,
+  bordered = TRUE,
+  pagination = FALSE,
+  height = 400,
+  defaultColDef = colDef(
+    style = list(fontSize = "0.7rem"),
+    headerStyle = list(fontSize = "0.8rem")
+  ),
+  columns = list(
+    Time = colDef(
+      name = "Date",
+      sticky = "left",
+      format = colFormat(date = TRUE),
+      style = function(value, index) {
+        if (!is.na(forecast_df$ForecastedSD[index])) {
+          list(
+            background = "#ffeb3b50",
+            textAlign = "left",
+            fontWeight = "600",
+            fontSize = "0.7rem",
+            lineHeight = "1.375rem"
+          )
+        } else {
+          list(
+            textAlign = "left",
+            fontWeight = "600",
+            fontSize = "0.7rem",
+            lineHeight = "1.375rem"
+          )
+        }
+      }
+    ),
+    ForecastedSD = colDef(
+      name = "Forecasted Volatility",
+      style = function(value) {
+        if (!is.na(value)) {
+          list(
+            background = "#ffeb3b50",
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        } else {
+          list(
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        }
+      }
+    ),
+    F_Upper_95 = colDef(
+      name = "Forecast 95% CI",
+      style = function(value) {
+        if (!is.na(value)) {
+          list(
+            background = "#ffeb3b50",
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        } else {
+          list(
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        }
+      }
+    ),
+    F_Upper_99 = colDef(
+      name = "Forecast 99% CI",
+      style = function(value) {
+        if (!is.na(value)) {
+          list(
+            background = "#ffeb3b50",
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        } else {
+          list(
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        }
+      }
+    ),
+    ConditionalSD = colDef(
+      name = "Historical Volatility",
+      style = function(value, index) {
+        if (!is.na(forecast_df$ForecastedSD[index])) {
+          list(
+            background = "#ffeb3b50",
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        } else {
+          list(
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        }
+      }
+    ),
+    C_Upper_95 = colDef(
+      name = "Historical 95% CI",
+      style = function(value, index) {
+        if (!is.na(forecast_df$ForecastedSD[index])) {
+          list(
+            background = "#ffeb3b50",
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        } else {
+          list(
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        }
+      }
+    ),
+    C_Upper_99 = colDef(
+      name = "Historical 99% CI",
+      style = function(value, index) {
+        if (!is.na(forecast_df$ForecastedSD[index])) {
+          list(
+            background = "#ffeb3b50",
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        } else {
+          list(
+            textAlign = "right",
+            fontSize = "0.7rem"
+          )
+        }
+      }
+    )
+  )
+)}

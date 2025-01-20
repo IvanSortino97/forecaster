@@ -1,5 +1,6 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-.rds
+*.Rproj.user
+*.Rhistory
+*.RData
+*.Ruserdata
+*.rds
+app/files/cached_data.rds

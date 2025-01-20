@@ -7,6 +7,7 @@ box::use(
   data.table[rbindlist],
   utils[tail],
   rugarch[ugarchforecast, sigma, fitted],
+  reactable[renderReactable],
   echarts4r[renderEcharts4r],
   shinytoastr[toastr_info, toastr_clear_all],
   shinyjs[hide],
@@ -116,7 +117,7 @@ server <- function(id, stockInfo, garchFit) {
                   })
 
 
-          # output[[paste0(x,"tableInfo")]] <- renderReactable(make_report(backtestResults[[x]], info = T))
+          output[[paste0(x,"forecastRaw")]] <- renderReactable(make_raw_table(forecastDf[[x]]))
           # output[[paste0(x,"tableExceed")]] <- renderReactable(make_report(backtestResults[[x]], type = "exceed"))
           # output[[paste0(x,"tableUc")]] <- renderReactable(make_report(backtestResults[[x]], type = "uc"))
           # output[[paste0(x,"tableCc")]] <- renderReactable(make_report(backtestResults[[x]], type = "cc"))
