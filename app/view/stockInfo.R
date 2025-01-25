@@ -276,7 +276,7 @@ server <- function(id, ...) {
 
     output$description <- renderText({
       req(scraped_info())
-      scraped_info()$description
+      if (!is.na(scraped_info()$description)) scraped_info()$description else scraped_info()$description2
     })
 
     output$valuationMeasures <- renderReactable({

@@ -156,6 +156,7 @@ scrape_yahoo_finance <- function(ticker) {
   # Define the XPath expressions for scraping
   scrapelist <- list(
     description = '//p[@class="yf-1600hyr" and not(@title)]',
+    description2 = '//p[@class="yf-1ja4ll8" and not(@title)]',
     stockPrice = '//*[@data-field="regularMarketOpen"]',
     fiftyTwoWeekRange = '//*[@data-field="fiftyTwoWeekRange"]',
     volume = '//*[@data-field="regularMarketVolume"]',
