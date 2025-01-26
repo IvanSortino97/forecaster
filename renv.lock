@@ -199,7 +199,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "e78bbbb81a5dcd71a4bd3268d6ede0b1"
+      "Hash": "9da7c242d94a8419d045f6b3a64b9765"
     },
     "Rsolnp": {
       "Package": "Rsolnp",
@@ -675,6 +675,16 @@
       ],
       "Hash": "c2efdd5f0bcd1ea861c2d4e2a883a67d"
     },
+    "fracdiff": {
+      "Package": "fracdiff",
+      "Version": "1.5-3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "stats"
+      ],
+      "Hash": "a74597c42c5343764548aee4930e1ee1"
+    },
     "fs": {
       "Package": "fs",
       "Version": "1.6.3",
@@ -813,7 +823,7 @@
         "methods",
         "stats"
       ],
-      "Hash": "d7d6a7cb690ac73eeced99e1ed9d6cdb"
+      "Hash": "97d266249d6c3b4f40e34e1ceaf9c558"
     },
     "knitr": {
       "Package": "knitr",
@@ -1047,7 +1057,7 @@
         "R",
         "stats"
       ],
-      "Hash": "4d1891e59ac7a12b4e7e8a69349125f1"
+      "Hash": "c7241e6be9d6df551a2e539a50f5c875"
     },
     "nlme": {
       "Package": "nlme",
@@ -1459,6 +1469,7 @@
         "Rsolnp",
         "SkewHyperbolic",
         "chron",
+        "fracdiff",
         "grDevices",
         "graphics",
         "ks",
@@ -1472,7 +1483,7 @@
         "xts",
         "zoo"
       ],
-      "Hash": "47a62eaaf584f476d17031a2e334b3a9"
+      "Hash": "110853d586b51f44bc17548062b64cdf"
     },
     "rvest": {
       "Package": "rvest",
@@ -1887,7 +1898,7 @@
         "utils",
         "zoo"
       ],
-      "Hash": "8a3928cb53aca9921f0db707550dfa84"
+      "Hash": "f9269495a613f8e237f01691bf789ead"
     },
     "utf8": {
       "Package": "utf8",
@@ -1922,6 +1933,18 @@
         "R"
       ],
       "Hash": "c826c7c4241b6fc89ff55aaea3fa7491"
+    },
+    "waiter": {
+      "Package": "waiter",
+      "Version": "0.2.5",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R6",
+        "htmltools",
+        "shiny"
+      ],
+      "Hash": "93e6b6c8ae3f81d4be77a0dc74e5cf5e"
     },
     "waldo": {
       "Package": "waldo",
