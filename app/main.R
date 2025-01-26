@@ -1,14 +1,15 @@
-box::use(shiny[observe, reactive, reactiveVal, moduleServer, NS, tags, renderText, req],
+box::use(shiny[observe, reactive, reactiveVal, moduleServer, NS, tags, renderText, req, tagList],
          bslib[..., page_sidebar, page_fillable], # do not remove "..."
          shinybrowser[get_device, detect],
          shinyjs[useShinyjs],
-         waiter[useWaiter,waiterPreloader, waiterShowOnLoad, spin_fading_circles],
+         waiter[useWaiter,waiterPreloader, waiterShowOnLoad, ...],
+         shinyLottie[include_lottie, lottie_animation],
          shinytoastr[toastr_warning, useToastr],
          shiny.router[get_page, router_ui, route, router_server])
 
 box::use(app / view[...],
-         app / logic / general_utils[onStart, onEnd, header])
-
+         app / logic / general_utils[onStart, onEnd, header, start_spinner],
+         app / styles / colors[custom_blue])
 
 
 #' @export
@@ -21,9 +22,13 @@ ui <- function(id) {
                head$html, # head script and style
                useShinyjs(),
                useWaiter(),
-  waiterPreloader(),
+
+               start_spinner(color = custom_blue, 
+               text = "Forcaster is loading...", 
+               text_style = sprintf("color:%s;", custom_blue)),
 
     title = header("Forcaster", idtextOutput = ns("stockTicker")),
+
 
     sidebar = sidebar$sidebar_component(ns("sidebarId")),
 
@@ -40,7 +45,6 @@ ui <- function(id) {
   )
 
 }
-
 #' @export
 server <- function(id) {
   moduleServer(id, function(input, output, session) {

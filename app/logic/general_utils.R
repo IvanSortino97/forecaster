@@ -1,10 +1,11 @@
-box::use(shiny[reactiveValuesToList, img, tags, HTML, shinyOptions, getShinyOption, onSessionEnded, textOutput, withProgress],
+box::use(shiny[tagList, img, tags, HTML, shinyOptions, getShinyOption, onSessionEnded, textOutput, withProgress],
          shiny.router[route_link],
          shinyjs[hide, show],
          shinytoastr[toastr_error, toastr_warning],
          bslib[card, page_fillable],
          bsicons[bs_icon],
          spsComps[addLoader],
+         waiter[waiterPreloader],
          yaml[read_yaml, write_yaml])
 
 #' @export
@@ -33,6 +34,23 @@ onEnd <- function(){
 })
 }
 
+#' @export
+start_spinner <- function(color = "#1386d2", bg_color = "white", text = "Loading...", text_style = "color: black;"){
+waiterPreloader(
+  html = tagList(
+    tags$div(
+      class = "spinner-box",
+      tags$div(class = "blue-orbit leo", style = sprintf("border: 1px solid %s;", color)), 
+      tags$div(class = "green-orbit leo", style = sprintf("border: 1px solid %s;", color)), 
+      tags$div(class = "red-orbit leo", style = sprintf("border: 1px solid %s;", color)), 
+      tags$div(class = "white-orbit w1 leo", style = sprintf("border: 1px solid %s;", color)), 
+      tags$div(class = "white-orbit w2 leo", style = sprintf("border: 1px solid %s;", color)), 
+      tags$div(class = "white-orbit w3 leo", style = sprintf("border: 1px solid %s;", color))),
+    tags$h6(text, style =  sprintf("transform: translateY(100px); font-size: 1rem; font-weight: 350; %s", text_style))
+  ),
+  color = bg_color,
+  fadeout = TRUE
+)}
 
 #' @export
 header <- function(title, idtextOutput) {

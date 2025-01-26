@@ -1,6 +1,11 @@
 *.Rproj.user
+*.Rproj
 *.Rhistory
 *.RData
 *.Ruserdata
 *.rds
 app/files/cached_data.rds
+.Rproj.user
+.DS_Store
+forcaster.Rproj
+forcaster.rproj
