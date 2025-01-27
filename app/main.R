@@ -3,7 +3,6 @@ box::use(shiny[observe, reactive, reactiveVal, moduleServer, NS, tags, renderTex
          shinybrowser[get_device, detect],
          shinyjs[useShinyjs],
          waiter[useWaiter,waiterPreloader, waiterShowOnLoad, ...],
-         shinyLottie[include_lottie, lottie_animation],
          shinytoastr[toastr_warning, useToastr],
          shiny.router[get_page, router_ui, route, router_server])
 
@@ -23,8 +22,8 @@ ui <- function(id) {
                useShinyjs(),
                useWaiter(),
 
-               start_spinner(color = custom_blue, 
-               text = "Forcaster is loading...", 
+               start_spinner(color = custom_blue,
+               text = "Forcaster is loading...",
                text_style = sprintf("color:%s;", custom_blue)),
 
     title = header("Forcaster", idtextOutput = ns("stockTicker")),
