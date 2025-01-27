@@ -38,15 +38,20 @@ onEnd <- function(){
 start_spinner <- function(color = "#1386d2", bg_color = "white", text = "Loading...", text_style = "color: black;"){
 waiterPreloader(
   html = tagList(
-    tags$div(
-      class = "spinner-box",
-      tags$div(class = "blue-orbit leo", style = sprintf("border: 1px solid %s;", color)), 
-      tags$div(class = "green-orbit leo", style = sprintf("border: 1px solid %s;", color)), 
-      tags$div(class = "red-orbit leo", style = sprintf("border: 1px solid %s;", color)), 
-      tags$div(class = "white-orbit w1 leo", style = sprintf("border: 1px solid %s;", color)), 
-      tags$div(class = "white-orbit w2 leo", style = sprintf("border: 1px solid %s;", color)), 
-      tags$div(class = "white-orbit w3 leo", style = sprintf("border: 1px solid %s;", color))),
-    tags$h6(text, style =  sprintf("transform: translateY(100px); font-size: 1rem; font-weight: 350; %s", text_style))
+
+        tags$div(
+          class = "spinner-box",
+          tags$div(class = "blue-orbit leo", style = sprintf("border: 1px solid %s;", color)), 
+          tags$div(class = "green-orbit leo", style = sprintf("border: 1px solid %s;", color)), 
+          tags$div(class = "red-orbit leo", style = sprintf("border: 1px solid %s;", color)), 
+          tags$div(class = "white-orbit w1 leo", style = sprintf("border: 1px solid %s;", color)), 
+          tags$div(class = "white-orbit w2 leo", style = sprintf("border: 1px solid %s;", color)), 
+          tags$div(class = "white-orbit w3 leo", style = sprintf("border: 1px solid %s;", color)),
+        
+        tags$img(src = "static/logo.png", class = "white-orbit leo", style = "opacity: 0.5;"),
+        tags$h6(text, style = sprintf("transform: translateY(100px); font-size: 1rem; font-weight: 350; %s", text_style))
+        )
+
   ),
   color = bg_color,
   fadeout = TRUE
