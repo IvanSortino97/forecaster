@@ -1,12 +1,12 @@
-name: Forecaster
-title: Forecaster
+name: forecaster
+title: forecaster
 username: ivansortino
 account: ivansortino
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 12372616
-bundleId: 9707947
-url: https://ivansortino.shinyapps.io/forcaster/
+appId: 13823609
+bundleId: 9708241
+url: https://ivansortino.shinyapps.io/forecaster/
 version: 1
 asMultiple: FALSE
 asStatic: FALSE
