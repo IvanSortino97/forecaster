@@ -89,7 +89,7 @@ server <- function(id, stockInfo, garchFit) {
 
             toastr_info(
               title = "Please wait",
-              message = sprintf("Forcasting %s model", x),
+              message = sprintf("Forecasting %s model", x),
               position = "top-center",
               timeOut = 0,
               hideDuration = 1800

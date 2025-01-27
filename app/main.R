@@ -23,10 +23,10 @@ ui <- function(id) {
                useWaiter(),
 
                start_spinner(color = custom_blue,
-               text = "Forcaster is loading...",
+               text = "Forecaster is loading...",
                text_style = sprintf("color:%s;", custom_blue)),
 
-    title = header("Forcaster", idtextOutput = ns("stockTicker")),
+    title = header("Forecaster", idtextOutput = ns("stockTicker")),
 
 
     sidebar = sidebar$sidebar_component(ns("sidebarId")),
