@@ -149,8 +149,6 @@ server <- function(id, stockInfo) {
     test = reactiveValues()
 
 
-
-
     observe({
       req(stockInfo()$data_xts(), is_page("stockAnalysis") )
 
