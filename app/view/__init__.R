@@ -9,6 +9,8 @@ box::use(
   app/view/stockInfo,
   app/view/stockAnalysis,
 
+  app/view/prophetForecast,
+
   app/view/garchFit,
   app/view/garchBacktest,
   app/view/garchForecast,

@@ -33,8 +33,11 @@ ui <- function(id) {
 
     page_fillable(router_ui(
       route("/", homepage$ui(ns("homepage"))),
+
       route("stockInfo", stockInfo$ui(ns("stockInfo"))),
       route("stockAnalysis", stockAnalysis$ui(ns("stockAnalysis"))),
+
+      route("prophetForecast", prophetForecast$ui(ns("prophetForecast"))),
 
       route("garchFit", garchFit$ui(ns("garchFit"))),
       route("garchBacktest", garchBacktest$ui(ns("garchBacktest"))),
@@ -53,14 +56,17 @@ server <- function(id) {
     start_page <- "/"
     router_server(start_page)
 
+    # Server functions
     homepage$server("homepage")
+
     op_stockInfo <- stockInfo$server("stockInfo")
     stockAnalysis$server("stockAnalysis", reactive(op_stockInfo))
+
+    prophetForecast$server("prophetForecast", reactive(op_stockInfo))
 
     op_garchFit <- garchFit$server("garchFit", reactive(op_stockInfo))
     garchBacktest$server("garchBacktest", reactive(op_stockInfo), reactive(op_garchFit))
     garchForecast$server("garchForecast", reactive(op_stockInfo), reactive(op_garchFit))
-
 
     # -------------------------------------------------------------------------
 

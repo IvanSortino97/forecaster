@@ -45,6 +45,16 @@ sidebar_component <- function(idSd) {
         )
       ),
 
+            accordion_panel(
+        "PROPHET Model",
+        icon = bs_icon("lightning-fill"),
+       accordion_section(
+          title = "Forecast",
+          page = "prophetForecast",
+          icon = "fast-forward"
+        )
+      ),
+
       accordion_panel(
         "GARCH Models",
         icon = bs_icon("hammer"),
