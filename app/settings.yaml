@@ -1,6 +1,6 @@
 symbols:
-  last_update: '2025-01-27'
-  last_update_sp500: '2025-01-27'
+  last_update: '2025-01-29'
+  last_update_sp500: '2025-01-29'
   last_update_data:
-    date: '2025-01-27'
-    ticker: TSLA
+    date: '2025-01-28'
+    ticker: AAPL

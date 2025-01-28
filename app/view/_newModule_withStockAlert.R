@@ -6,7 +6,7 @@ box::use(
   shinyjs[hide],
 )
 box::use(
-  app / logic / general_utils[conditional_page_fillable, make_spinner, show_condition],
+  app / logic / general_utils[conditional_page_fillable, make_spinner, show_condition, page_footer],
 )
 
 #' @export
@@ -19,7 +19,18 @@ ui <- function(id) {
       subtitle = "Subtitle",
       #condition_page = "stockInfo",
       body = div(
-        "div content"
+        "div content",
+
+
+
+
+
+
+
+    page_footer(hrefPageNext = "garchFit",
+                textPageNext = "Fitting Model",
+                hrefPagePrecedent = "prohetForecast",
+                textPagePrecedent = "Prophet Forecast")
       )
   )
 }

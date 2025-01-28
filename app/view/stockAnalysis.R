@@ -121,8 +121,8 @@ ui <- function(id) {
                          card_body(reactableOutput(ns("archTable")))
                        )
     ),
-    page_footer(hrefPageNext = "garchFit",
-                textPageNext = "Fitting Model",
+    page_footer(hrefPageNext = "prophetForecast",
+                textPageNext = "Prophet Model",
                 hrefPagePrecedent = "stockInfo",
                 textPagePrecedent = "Stock Selection")
     )

@@ -32,8 +32,8 @@ ui <- function(id) {
                                                                                    model = x))),
                               page_footer(hrefPageNext = "garchBacktest",
                                           textPageNext = "Backtest Model",
-                                          hrefPagePrecedent = "stockAnalysis",
-                                          textPagePrecedent = "Stock Analysis")
+                                          hrefPagePrecedent = "prophetForecast",
+                                          textPagePrecedent = "Prophet Model")
                             )
   )
 }
