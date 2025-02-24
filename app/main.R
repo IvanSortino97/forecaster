@@ -23,8 +23,8 @@ ui <- function(id) {
                useWaiter(),
 
                start_spinner(color = custom_blue,
-               text = "Forecaster is loading...",
-               text_style = sprintf("color:%s;", custom_blue)),
+                             text = "Forecaster is loading...",
+                             text_style = sprintf("color:%s;", custom_blue)),
 
     title = header("Forecaster", idtextOutput = ns("stockTicker")),
 
