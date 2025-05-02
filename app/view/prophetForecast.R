@@ -1,7 +1,7 @@
 # app/view/
 
 box::use(
-  shiny[div, moduleServer, NS, tags, observeEvent, observe, req, sliderInput],
+  shiny[div,textOutput, moduleServer, NS, tags, observeEvent, observe, req, sliderInput, renderText],
   bslib[page_fillable, card, card_header, card_body, card_title, card_footer],
   shiny.router[is_page],
   shinyjs[hide],
@@ -23,6 +23,12 @@ ui <- function(id) {
       condition_page = "stockInfo",
       body = div(
         card(
+        card_header(
+            div(style = "padding-left: 5px;",
+            tags$h5(textOutput(ns("PlotTitle")), style = "font-weight: bold; color: #464646; font-size: 20px; padding-top: 10px;"),
+            tags$p("Model: Prophet", style = "font-size: 12px; color: #7f8189; display: inline;")
+            )),
+
           card_body(echarts4rOutput(ns("plot"))),
             card_footer(
             sliderInput(ns("periods"), "Number of Days to Forecast",
@@ -47,18 +53,19 @@ server <- function(id, stockInfo) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    #spinner <- make_spinner("titleLoader")
+    spinner <- make_spinner("titleLoader")
 
     hide("conditionalPanel")
     observeEvent(stockInfo()$data_xts() , {
       show_condition(stockInfo()$data_xts())})
     
     observe({
-    
       req(stockInfo()$returns(), is_page("prophetForecast"))
-
       show_condition(stockInfo()$returns())
 
+      spinner$show()
+
+      output$PlotTitle <- renderText({ paste0("Forecast for ", stockInfo()$ticker()) })
       model <- make_prophet_model(stockInfo()$ticker(),
                                   stockInfo()$data()$date,
                                   stockInfo()$data()$Close,
@@ -66,7 +73,7 @@ server <- function(id, stockInfo) {
       
       output$plot <- renderEcharts4r({model$plot})
 
-      
+      spinner$hide()
     })
 
   })
