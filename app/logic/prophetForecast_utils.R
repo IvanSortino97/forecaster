@@ -7,7 +7,7 @@ box::use(
 )
 
 #' @export
-make_prophet_model <- function(date, close, periods) {
+make_prophet_model <- function(ticker, date, close, periods) {
 
   prophet_dt <- data.table( ds = as.Date(date), y = close)
   model <- prophet(prophet_dt)
@@ -23,7 +23,7 @@ make_prophet_model <- function(date, close, periods) {
     
   e_band2(yhat_lower, yhat_upper, name ="Confidence Interval", itemStyle = list(borderWidth = 0, opacity = 0.3)) |>
   
-  e_title("Prophet Forecast", left = "center") |>
+  e_title(sprintf("%s forecast",ticker), subtext = "Model: Prophet") |>
   e_tooltip(trigger = "axis") |>
   e_legend(bottom = 0)
 
