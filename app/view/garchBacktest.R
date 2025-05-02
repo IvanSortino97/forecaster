@@ -12,7 +12,7 @@ box::use(
   reactable[renderReactable],
 )
 box::use(
-  app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, show_condition],
+  app / logic / general_utils[in_card_subtitle_style, conditional_page_fillable, make_spinner, show_condition, page_footer],
   app / logic / garchFit_utils[models],
   app / logic / garchBacktest_utils[...]
 )
@@ -27,7 +27,14 @@ ui <- function(id) {
                             subtitle = "Configure window size and backtesting methods to evaluate model performance.",
                             condition_page = "garchFit",
                             body = div(
-                                tagList(lapply(models, function(x) conditionalBacktestCard(ns = ns, x)))
+                                tagList(lapply(models, function(x) conditionalBacktestCard(ns = ns, x))),
+
+                                        page_footer(
+                                          hrefPageNext = "garchForecast",
+                                          textPageNext = "Forecast Model",
+                                          hrefPagePrecedent = "garchFit",
+                                          textPagePrecedent = "Fitting Model"
+                                        )
                             )
   )
 }

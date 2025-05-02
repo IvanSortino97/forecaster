@@ -13,7 +13,7 @@ box::use(
   shinyjs[hide],
 )
 box::use(
-  app / logic / general_utils[conditional_page_fillable, make_spinner, show_condition],
+  app / logic / general_utils[conditional_page_fillable, make_spinner, show_condition, page_footer],
   app / logic / garchFit_utils[models],
   app / logic / garchForecast_utils[...],
 )
@@ -28,7 +28,14 @@ ui <- function(id) {
                             subtitle = "Subtitle",
                             condition_page = "garchFit",
                             body = div(
-                              tagList(lapply(models, function(x) conditionalForecastCard(ns = ns, x)))
+                              tagList(lapply(models, function(x) conditionalForecastCard(ns = ns, x))),
+
+                                                                      page_footer(
+                                          hrefPageNext = "arimaFit",
+                                          textPageNext = "Arima Model",
+                                          hrefPagePrecedent = "garchBacktest",
+                                          textPagePrecedent = "Backtest Model"
+                                        )
                             )
   )
 }

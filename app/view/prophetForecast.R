@@ -39,7 +39,7 @@ ui <- function(id) {
         
         page_footer(
           hrefPageNext = "garchFit",
-          textPageNext = "Fitting Model",
+          textPageNext = "Garch Model",
           hrefPagePrecedent = "stockAnalysis",
           textPagePrecedent = "Stock Analysis"
         )
