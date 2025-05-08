@@ -30,7 +30,7 @@ ui <- function(id) {
                             body = div(
                               tagList(lapply(models, function(x) conditionalForecastCard(ns = ns, x))),
 
-                                                                      page_footer(
+                                        page_footer(
                                           hrefPageNext = "arimaFit",
                                           textPageNext = "Arima Model",
                                           hrefPagePrecedent = "garchBacktest",
