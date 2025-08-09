@@ -5,6 +5,6 @@ account: ivansortino
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 13823609
-bundleId: 10750403
+bundleId: 10750827
 url: https://ivansortino.shinyapps.io/forecaster/
 version: 1
