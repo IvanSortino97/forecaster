@@ -46,7 +46,7 @@ ui <- function(id) {
         div(class = "row mb-4",
             div(class = "col-md-6",
                 card(
-                    full_screen = TRUE,
+                    full_screen = FALSE,
                     height = "300px",
                     card_header(
                         "Stock Selection",
@@ -64,7 +64,7 @@ ui <- function(id) {
             ),
             div(class = "col-md-6",
                 card(
-                    full_screen = TRUE,
+                    full_screen = FALSE,
                     height = "300px",
                     card_header(
                         "Stock Analysis",
@@ -87,7 +87,7 @@ ui <- function(id) {
         div(class = "row mb-4",
             div(class = "col-md-12",
                 card(
-                    full_screen = TRUE,
+                    full_screen = FALSE,
                     height = "300px",
                     card_header(
                         "Prophet Model",
@@ -110,7 +110,7 @@ ui <- function(id) {
         div(class = "row mb-4",
             div(class = "col-md-4",
                 card(
-                    full_screen = TRUE,
+                    full_screen = FALSE,
                     height = "300px",
                     card_header(
                         "Fit GARCH Model",
@@ -128,7 +128,7 @@ ui <- function(id) {
             ),
             div(class = "col-md-4",
                 card(
-                    full_screen = TRUE,
+                    full_screen = FALSE,
                     height = "300px",
                     card_header(
                         "Backtest GARCH",
@@ -146,7 +146,7 @@ ui <- function(id) {
             ),
             div(class = "col-md-4",
                 card(
-                    full_screen = TRUE,
+                    full_screen = FALSE,
                     height = "300px",
                     card_header(
                         "GARCH Forecast",
@@ -169,7 +169,7 @@ ui <- function(id) {
         div(class = "row mb-4",
             div(class = "col-12",
                 card(
-                    full_screen = TRUE,
+                    full_screen = FALSE,
                     height = "200px",
                     card_header(
                         "ARIMA Section",
