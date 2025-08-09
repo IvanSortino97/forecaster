@@ -1,7 +1,7 @@
 # app/view/
 
 box::use(
-  shiny[div,textOutput, moduleServer, NS, tags, observeEvent, observe, req, sliderInput, renderText],
+  shiny[div,textOutput, moduleServer, NS, tags, observeEvent, observe, req, sliderInput, renderText, reactiveVal],
   bslib[page_fillable, card, card_header, card_body, card_title, card_footer],
   shiny.router[is_page],
   shinyjs[hide],
@@ -54,24 +54,38 @@ server <- function(id, stockInfo) {
     ns <- session$ns
 
     spinner <- make_spinner("titleLoader")
+    spinnerPlot <- make_spinner("plot")
+
+    model <- reactiveVal(NULL)
+    periods <- reactiveVal(30)
 
     hide("conditionalPanel")
     observeEvent(stockInfo()$data_xts() , {
-      show_condition(stockInfo()$data_xts())})
+      show_condition(stockInfo()$data_xts())
+      
+      # If ticker changes, reset model and periods
+      model(NULL)
+      })
     
     observe({
-      req(stockInfo()$returns(), is_page("prophetForecast"))
+      req(stockInfo()$returns(), is_page("prophetForecast")) 
       show_condition(stockInfo()$returns())
 
       spinner$show()
 
       output$PlotTitle <- renderText({ paste0("Forecast for ", stockInfo()$ticker()) })
-      model <- make_prophet_model(stockInfo()$ticker(),
+      
+      if(is.null(model()) || input$periods != periods()) {
+      spinnerPlot$show()
+      periods(input$periods)
+      model( make_prophet_model(stockInfo()$ticker(),
                                   stockInfo()$data()$date,
                                   stockInfo()$data()$Close,
-                                  input$periods)
+                                  input$periods))
+      spinnerPlot$hide()
+      }
       
-      output$plot <- renderEcharts4r({model$plot})
+      output$plot <- renderEcharts4r({model()$plot})
 
       spinner$hide()
     })
