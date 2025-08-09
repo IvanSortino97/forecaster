@@ -153,57 +153,64 @@ scrape_yahoo_finance <- function(ticker) {
   message(sprintf('Scraping "%s"',url))
   webpage <- NULL
 
-  # Define the XPath expressions for scraping
-  scrapelist <- list(
-    description = '//p[@class="yf-1600hyr" and not(@title)]',
-    description2 = '//p[@class="yf-1ja4ll8" and not(@title)]',
-    stockPrice = '//*[@data-field="regularMarketOpen"]',
-    fiftyTwoWeekRange = '//*[@data-field="fiftyTwoWeekRange"]',
-    volume = '//*[@data-field="regularMarketVolume"]',
-    averageVolume  = '//*[@data-field="averageVolume"]',
-    peRatioTTM = '//li[span[contains(text(), "PE Ratio (TTM)")]]//fin-streamer[@data-field="trailingPE"]/@data-value',
-    epsTTM = '//li[span[contains(text(), "EPS (TTM)")]]//fin-streamer[@data-field="trailingPE"]/@data-value',
-    earningsDate = '//li[.//span[contains(text(),"Earnings Date")]]//span[contains(@class, "value")]',
-    marketCap = '//li[p[contains(text(), "Market Cap")]]/p[@class="value yf-i6syij"]',
-    enterpriseValue = '//li[p[contains(text(), "Enterprise Value ")]]/p[@class="value yf-i6syij"]',
-    trailingPE = '//li[p[contains(text(), "Trailing P/E ")]]/p[@class="value yf-i6syij"]',
-    forwardPE = '//li[p[contains(text(), "Forward P/E ")]]/p[@class="value yf-i6syij"]',
-    pegRatio = '//li[p[contains(text(), "PEG Ratio (5yr expected) ")]]/p[@class="value yf-i6syij"]',
-    priceSale = '//li[p[contains(text(), "Price/Sales  (ttm)")]]/p[@class="value yf-i6syij"]',
-    priceBook = '//li[p[contains(text(), "Price/Book  (mrq)")]]/p[@class="value yf-i6syij"]',
-    enterpriseValueRevenue = '//li[p[contains(text(), "Enterprise Value/Revenue ")]]/p[@class="value yf-i6syij"]',
-    enterpriseValueEBITDA = '//li[p[contains(text(), "Enterprise Value/EBITDA ")]]/p[@class="value yf-i6syij"]',
-    profitMargin = '//li[p[contains(text(), "Profit Margin")]]/p[@class="value yf-lc8fp0"]',
-    returnOnAssets = '//li[p[contains(text(), "Return on Assets  (ttm)")]]/p[@class="value yf-lc8fp0"]',
-    returnOnEquity = '//li[p[contains(text(), "Return on Equity  (ttm)")]]/p[@class="value yf-lc8fp0"]',
-    revenue = '//li[p[contains(text(), "Revenue  (ttm)")]]/p[@class="value yf-lc8fp0"]',
-    netIncome = '//li[p[contains(text(), "Net Income Avi to Common  (ttm)")]]/p[@class="value yf-lc8fp0"]',
-    dilutedEPS = '//li[p[contains(text(), "Diluted EPS  (ttm)")]]/p[@class="value yf-lc8fp0"]',
-    totalCash = '//li[p[contains(text(), "Total Cash  (mrq)")]]/p[@class="value yf-lc8fp0"]',
-    totalDebtEquity = '//li[p[contains(text(), "Total Debt/Equity  (mrq)")]]/p[@class="value yf-lc8fp0"]',
-    leveredFreeCashFlow = '//li[p[contains(text(), "Levered Free Cash Flow  (ttm)")]]/p[@class="value yf-lc8fp0"]'
-  )
+# Define the XPath expressions for scraping
+scrapelist <- list(
+  description = c(
+    '//p[@class="yf-1600hyr" and not(@title)]',
+    '//p[@class="yf-1ja4ll8" and not(@title)]',
+    '//p[@class="yf-1xq2z91" and not(@title)]'
+  ),
+  stockPrice = '//*[@data-field="regularMarketOpen"]',
+  fiftyTwoWeekRange = '//*[@data-field="fiftyTwoWeekRange"]',
+  volume = '//*[@data-field="regularMarketVolume"]',
+  averageVolume  = '//*[@data-field="averageVolume"]',
+  peRatioTTM = '//li[span[contains(text(), "PE Ratio (TTM)")]]//fin-streamer[@data-field="trailingPE"]/@data-value',
+  epsTTM = '//li[span[contains(text(), "EPS (TTM)")]]//fin-streamer[@data-field="trailingPE"]/@data-value',
+  earningsDate = '//li[.//span[contains(text(),"Earnings Date")]]//span[contains(@class, "value")]',
+  marketCap = '//li[p[contains(text(), "Market Cap")]]/p[@class="value yf-i6syij"]',
+  enterpriseValue = '//li[p[contains(text(), "Enterprise Value ")]]/p[@class="value yf-i6syij"]',
+  trailingPE = '//li[p[contains(text(), "Trailing P/E ")]]/p[@class="value yf-i6syij"]',
+  forwardPE = '//li[p[contains(text(), "Forward P/E ")]]/p[@class="value yf-i6syij"]',
+  pegRatio = '//li[p[contains(text(), "PEG Ratio (5yr expected) ")]]/p[@class="value yf-i6syij"]',
+  priceSale = '//li[p[contains(text(), "Price/Sales  (ttm)")]]/p[@class="value yf-i6syij"]',
+  priceBook = '//li[p[contains(text(), "Price/Book  (mrq)")]]/p[@class="value yf-i6syij"]',
+  enterpriseValueRevenue = '//li[p[contains(text(), "Enterprise Value/Revenue ")]]/p[@class="value yf-i6syij"]',
+  enterpriseValueEBITDA = '//li[p[contains(text(), "Enterprise Value/EBITDA ")]]/p[@class="value yf-i6syij"]',
+  profitMargin = '//li[p[contains(text(), "Profit Margin")]]/p[@class="value yf-lc8fp0"]',
+  returnOnAssets = '//li[p[contains(text(), "Return on Assets  (ttm)")]]/p[@class="value yf-lc8fp0"]',
+  returnOnEquity = '//li[p[contains(text(), "Return on Equity  (ttm)")]]/p[@class="value yf-lc8fp0"]',
+  revenue = '//li[p[contains(text(), "Revenue  (ttm)")]]/p[@class="value yf-lc8fp0"]',
+  netIncome = '//li[p[contains(text(), "Net Income Avi to Common  (ttm)")]]/p[@class="value yf-lc8fp0"]',
+  dilutedEPS = '//li[p[contains(text(), "Diluted EPS  (ttm)")]]/p[@class="value yf-lc8fp0"]',
+  totalCash = '//li[p[contains(text(), "Total Cash  (mrq)")]]/p[@class="value yf-lc8fp0"]',
+  totalDebtEquity = '//li[p[contains(text(), "Total Debt/Equity  (mrq)")]]/p[@class="value yf-lc8fp0"]',
+  leveredFreeCashFlow = '//li[p[contains(text(), "Levered Free Cash Flow  (ttm)")]]/p[@class="value yf-lc8fp0"]'
+)
 
-  # Function to extract and clean the data
-  extract_data <- function(xpath) {
-
+# Function to extract and clean the data
+extract_data <- function(xpath) {
+  # Support either single string or vector of XPaths
+  for (xp in xpath) {
     data <- webpage |>
-      html_nodes(xpath = xpath) |>
+      html_nodes(xpath = xp) |>
       html_text()
+
     data <- gsub(",", "", data)
-    if (length(data) == 0) {
-      return(NA)
+
+    if (length(data) > 0 && !is.na(data[1]) && data[1] != "") {
+      return(data[1])
     }
-    return(data[1])
   }
+  return(NA)
+}
 
-  ret <- NULL
-  tryCatch_toaster({
-    webpage <- read_html(url)
-    ret <- lapply(scrapelist, extract_data)
-  })
+ret <- NULL
+tryCatch_toaster({
+  webpage <- read_html(url)
+  ret <- lapply(scrapelist, extract_data)
+})
 
-  return(ret)
+return(ret)
 }
 
 #' @export
@@ -549,3 +556,4 @@ get_variation<-function(data){
 
   return(r)
 }
+  
