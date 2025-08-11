@@ -101,4 +101,4 @@ Contributions are welcome! If you have suggestions for improvements or want to r
 
 ## License
 
-This project is open source. Please see the `LICENSE` file for more details (if available).
+This project is open source.
